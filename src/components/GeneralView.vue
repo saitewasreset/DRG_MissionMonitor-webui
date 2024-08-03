@@ -164,7 +164,11 @@ function createMissionTypePlot(missionInfo: MissionInfo) {
   let missionCountList: number[] = [];
 
   for (const [missionTypeId, missionTypeInfo] of Object.entries(missionInfo.missionTypeData)) {
-    plotLabels.push(missionInfo.missionTypeMap[missionTypeId]);
+    plotLabels.push(
+      missionInfo.missionTypeMap[missionTypeId] === undefined
+        ? missionTypeId
+        : missionInfo.missionTypeMap[missionTypeId],
+    );
     missionCountList.push(missionTypeInfo.missionCount);
   }
 
