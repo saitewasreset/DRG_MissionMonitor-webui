@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, h } from "vue";
-import { useMessage, NDataTable, NIcon, type DataTableColumns } from "naive-ui";
+import { useMessage, NDataTable, NIcon, NCard, type DataTableColumns } from "naive-ui";
 
 import { WarningAltFilled, CheckmarkFilled } from "@vicons/carbon";
 
@@ -197,18 +197,20 @@ fetch(`./api/mission/mission_list`)
 </script>
 
 <template>
-  <div class="table-container">
-    <n-data-table
-      :columns="createMissionListColumns()"
-      :data="missionList"
-      :pagination="{ pageSize: 10 }"
-      :row-props="rowProps"
-      :row-class-name="
-        (rowData) => (rowData.missionId === lastSelectedMissionId ? 'selected-row' : '')
-      "
-      style="width: fit-content"
-    ></n-data-table>
-  </div>
+  <n-card title="任务列表">
+    <div class="table-container">
+      <n-data-table
+        :columns="createMissionListColumns()"
+        :data="missionList"
+        :pagination="{ pageSize: 10 }"
+        :row-props="rowProps"
+        :row-class-name="
+          (rowData) => (rowData.missionId === lastSelectedMissionId ? 'selected-row' : '')
+        "
+        style="width: fit-content"
+      ></n-data-table>
+    </div>
+  </n-card>
 </template>
 
 <style scoped>
