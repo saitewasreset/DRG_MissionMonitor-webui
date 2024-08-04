@@ -17,12 +17,14 @@ import { TaskAssetView, FavoriteFilled, LogoGithub } from "@vicons/carbon";
 import MissionComponent from "./components/MissionComponent.vue";
 import GeneralComponent from "./components/GeneralComponent.vue";
 import NavBar from "./components/NavBar.vue";
+import DamageComponent from "./components/DamageComponent.vue";
 
 const currentSelectComponentKey = ref("general");
 
 const keyToComponent: Record<string, Component> = {
   general: GeneralComponent,
   mission: MissionComponent,
+  damage: DamageComponent,
 };
 </script>
 

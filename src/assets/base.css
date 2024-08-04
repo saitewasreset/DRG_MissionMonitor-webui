@@ -51,3 +51,15 @@
 .selected-row {
   background-color: #9ed4fc;
 }
+
+.text-danger {
+  color: red;
+}
+
+.text-warning {
+  color: orangered;
+}
+
+.text-ok {
+  color: green;
+}
