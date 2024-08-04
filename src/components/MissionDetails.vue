@@ -27,8 +27,8 @@ const props = defineProps<{
     {{ formatMissionDate(props.missionBeginTimestamp) }}
   </n-h2>
   <n-card>
-    <n-tabs type="line" default-value="general" display-directive="show-lazy">
-      <n-tab-pane name="general" tab="概览">
+    <n-tabs type="line" default-value="general">
+      <n-tab-pane name="general" tab="概览" display-directive="show:lazy">
         <n-message-provider>
           <MissionGeneral
             :mission-id="props.missionId"
@@ -37,17 +37,17 @@ const props = defineProps<{
           />
         </n-message-provider>
       </n-tab-pane>
-      <n-tab-pane name="damage" tab="伤害">
+      <n-tab-pane name="damage" tab="伤害" display-directive="show:lazy">
         <n-message-provider>
           <MissionDamage :mission-id="props.missionId" />
         </n-message-provider>
       </n-tab-pane>
-      <n-tab-pane name="pick" tab="采集">
+      <n-tab-pane name="pick" tab="采集" display-directive="show:lazy">
         <n-message-provider>
           <MissionPick :mission-id="props.missionId" />
         </n-message-provider>
       </n-tab-pane>
-      <n-tab-pane name="kpi" tab="KPI">
+      <n-tab-pane name="kpi" tab="KPI" display-directive="show:lazy">
         <n-message-provider>
           <MissionKPI :mission-id="props.missionId" />
         </n-message-provider>
