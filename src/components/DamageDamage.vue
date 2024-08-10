@@ -7,6 +7,8 @@ import type { OverallDamageInfo, WeaponDamageInfo, CharacterDamageInfo } from ".
 import { nFormatter, generateCharacterClass } from "@/formatter";
 import { translate } from "@/mapping";
 
+import { getFirstGroupInfo } from "@/tool";
+
 interface OverallTableRow {
   playerName: string;
   validGameCount: number;
@@ -338,24 +340,35 @@ function createWeaponPlot() {
     },
   };
 
-  let plotLabels: string[] = [];
-  let damageDataList: number[] = [];
-  let friendlyFireDataList: number[] = [];
-
   if (props.weaponDamageInfo === undefined) {
     return;
   }
 
+  let weaponDataList: WeaponDamageInfo[] = [];
   for (const weaponData of Object.values(props.weaponDamageInfo)) {
-    plotLabels.push(weaponData.mappedName);
-    damageDataList.push(weaponData.damage / weaponData.validGameCount);
-    friendlyFireDataList.push(weaponData.friendlyFire / weaponData.validGameCount);
+    weaponDataList.push(weaponData);
   }
+
+  let damageGroupInfo = getFirstGroupInfo(
+    weaponDataList,
+    (a, b) => b.damage / b.validGameCount - a.damage / a.validGameCount,
+    (a) => a.damage / a.validGameCount,
+    (a) => a.mappedName,
+    0.1,
+  );
+
+  let friendlyFireGroupInfo = getFirstGroupInfo(
+    weaponDataList,
+    (a, b) => b.friendlyFire / b.validGameCount - a.friendlyFire / a.validGameCount,
+    (a) => a.friendlyFire / a.validGameCount,
+    (a) => a.mappedName,
+    0.1,
+  );
 
   let data: Data[] = [
     {
-      values: damageDataList,
-      labels: plotLabels,
+      values: damageGroupInfo.dataList,
+      labels: damageGroupInfo.labelList,
       type: "pie",
       name: "伤害",
       domain: {
@@ -368,8 +381,8 @@ function createWeaponPlot() {
       },
     },
     {
-      values: friendlyFireDataList,
-      labels: plotLabels,
+      values: friendlyFireGroupInfo.dataList,
+      labels: friendlyFireGroupInfo.labelList,
       type: "pie",
       name: "友伤",
       domain: {
@@ -657,10 +670,6 @@ function createEnemyPlot() {
     },
   };
 
-  let plotLabels: string[] = [];
-  let totalKillList: number[] = [];
-  let totalDamageList: number[] = [];
-
   if (props.overallDamageInfo === undefined) {
     return;
   }
@@ -692,16 +701,36 @@ function createEnemyPlot() {
     }
   }
 
+  let enemyDataList = [];
+
   for (const [mappedEnemyName, totalKill] of Object.entries(enemyKillMap)) {
-    plotLabels.push(mappedEnemyName);
-    totalKillList.push(totalKill);
-    totalDamageList.push(enemyDamageMap[mappedEnemyName]);
+    enemyDataList.push({
+      mappedName: mappedEnemyName,
+      totalKill,
+      totalDamage: enemyDamageMap[mappedEnemyName],
+    });
   }
+
+  let enemyKillGroupInfo = getFirstGroupInfo(
+    enemyDataList,
+    (a, b) => b.totalKill - a.totalKill,
+    (a) => a.totalKill,
+    (a) => a.mappedName,
+    0.1,
+  );
+
+  let enemyDamageGroupInfo = getFirstGroupInfo(
+    enemyDataList,
+    (a, b) => b.totalDamage - a.totalDamage,
+    (a) => a.totalDamage,
+    (a) => a.mappedName,
+    0.1,
+  );
 
   let data: Data[] = [
     {
-      values: totalKillList,
-      labels: plotLabels,
+      values: enemyKillGroupInfo.dataList,
+      labels: enemyKillGroupInfo.labelList,
       type: "pie",
       name: "总击杀数",
       domain: {
@@ -714,8 +743,8 @@ function createEnemyPlot() {
       },
     },
     {
-      values: totalDamageList,
-      labels: plotLabels,
+      values: enemyDamageGroupInfo.dataList,
+      labels: enemyDamageGroupInfo.labelList,
       type: "pie",
       name: "总伤害",
       domain: {
