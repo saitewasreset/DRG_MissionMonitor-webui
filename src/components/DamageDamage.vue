@@ -191,10 +191,12 @@ function createDamagePlot() {
       totalDamage += damage;
     }
 
-    killDataList.push(totalKillCount);
-    damageDataList.push(totalDamage);
+    killDataList.push(totalKillCount / playerData.validGameCount);
+    damageDataList.push(totalDamage / playerData.validGameCount);
     supplyCountList.push(playerData.averageSupplyCount);
-    damagePerRegularSupplyList.push(totalDamage / (playerData.averageSupplyCount + 1));
+    damagePerRegularSupplyList.push(
+      totalDamage / ((playerData.averageSupplyCount + 1) * playerData.validGameCount),
+    );
   }
 
   let data: Data[] = [
