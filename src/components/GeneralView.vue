@@ -8,7 +8,7 @@ import {
   useMessage,
   type DataTableColumns,
 } from "naive-ui";
-import { ref, h } from "vue";
+import { ref, h, watch } from "vue";
 
 import DeltaView from "./DeltaView.vue";
 
@@ -66,6 +66,11 @@ interface PlayerInfo {
 interface PlayerData {
   characterMap: Record<string, string>;
   playerData: Record<string, PlayerInfo>;
+}
+
+interface CharacterInfo {
+  characterCount: Record<string, number>;
+  characterMapping: Record<string, string>;
 }
 
 interface Response<T> {
@@ -330,7 +335,11 @@ function createPlayerInfoPlot(playerData: PlayerData) {
   let playerDeathNumList: number[] = [];
   let playerSupplyCountList: number[] = [];
 
-  let characterCountMap: Record<string, number> = {};
+  if (CharacterInfoData.value === undefined) {
+    return;
+  }
+
+  let characterCountMap: Record<string, number> = CharacterInfoData.value.characterCount;
 
   const characterToColor: Record<string, string> = {
     SCOUT: "#00BFFF",
@@ -338,16 +347,6 @@ function createPlayerInfoPlot(playerData: PlayerData) {
     ENGINEER: "#FF0000",
     GUNNER: "#008000",
   };
-
-  for (const playerInfo of Object.values(playerData.playerData)) {
-    for (const [characterGameId, characterCount] of Object.entries(playerInfo.characterInfo)) {
-      if (characterCountMap[characterGameId] === undefined) {
-        characterCountMap[characterGameId] = characterCount;
-      } else {
-        characterCountMap[characterGameId] += characterCount;
-      }
-    }
-  }
 
   for (const [characterGameId, characterCount] of Object.entries(characterCountMap)) {
     characterLabels.push(playerData.characterMap[characterGameId]);
@@ -431,6 +430,7 @@ const message = useMessage();
 const generalInfoData = ref<GeneralInfo>();
 const MissionInfoData = ref<MissionInfo>();
 const PlayerInfoData = ref<PlayerData>();
+const CharacterInfoData = ref<CharacterInfo>();
 
 const missionTypeTableData = ref<MissionTypeInfoTableRow[]>([]);
 const playerInfoTableData = ref<PlayerInfoTableRow[]>([]);
@@ -477,6 +477,22 @@ fetch("./api/general/player")
   .catch((err) => {
     message.error(`HTTP Error: ${err}`);
   });
+
+fetch("./api/general/character_info")
+  .then((res) => res.json())
+  .then((res: Response<CharacterInfo>) => {
+    if (res.code !== 200) {
+      message.error(`API Error: ${res.code} ${res.message}`);
+    } else {
+      CharacterInfoData.value = res.data;
+    }
+  });
+
+watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
+  if (PlayerInfoData.value !== undefined) {
+    createPlayerInfoPlot(PlayerInfoData.value);
+  }
+});
 </script>
 <template>
   <n-card title="任务">
