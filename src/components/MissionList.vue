@@ -2,7 +2,7 @@
 import { ref, h } from "vue";
 import { useMessage, NDataTable, NIcon, NCard, type DataTableColumns } from "naive-ui";
 
-import { WarningAltFilled, CheckmarkFilled } from "@vicons/carbon";
+import { WarningAltFilled, CheckmarkFilled, Error } from "@vicons/carbon";
 
 import {
   formatMissionDate,
@@ -29,7 +29,7 @@ interface MissionInfo {
 interface MissionInfoResponse {
   code: number;
   message: string;
-  data: MissionInfo[];
+  data: { missionInfo: MissionInfo[]; missionTypeMapping: Record<string, string> };
 }
 
 function renderValidIcon(valid: boolean) {
@@ -40,13 +40,30 @@ function renderValidIcon(valid: boolean) {
   }
 }
 
-function createMissionListColumns(): DataTableColumns<MissionInfo> {
+function renderMissionResultIcon(missionResult: number) {
+  if (missionResult === 0) {
+    return h(NIcon, { color: "green" }, { default: () => h(CheckmarkFilled) });
+  } else if (missionResult === 1) {
+    return h(NIcon, { color: "red" }, { default: () => h(WarningAltFilled) });
+  } else {
+    return h(NIcon, { color: "goldenrod" }, { default: () => h(Error) });
+  }
+}
+
+function createMissionListColumns(
+  missionTypeMapping: Record<string, string>,
+): DataTableColumns<MissionInfo> {
+  let missionTypeFilterOptions: { label: string; value: string }[] = [];
+  for (const [sourceName, mappedName] of Object.entries(missionTypeMapping)) {
+    missionTypeFilterOptions.push({ label: mappedName, value: sourceName });
+  }
   return [
     {
       title: "时间",
       key: "beginTimestamp",
       align: "center",
       defaultSortOrder: "descend",
+      sortOrder: "descend",
       sorter(a, b) {
         return a.beginTimestamp - b.beginTimestamp;
       },
@@ -73,6 +90,7 @@ function createMissionListColumns(): DataTableColumns<MissionInfo> {
         return translate(row.missionTypeId).value;
       },
       filterMultiple: true,
+      filterOptions: missionTypeFilterOptions,
       filter(value, row) {
         return row.missionTypeId === value;
       },
@@ -107,7 +125,7 @@ function createMissionListColumns(): DataTableColumns<MissionInfo> {
       key: "missionResult",
       align: "center",
       render(row) {
-        return formatMissionResult(row.missionResult);
+        return renderMissionResultIcon(row.missionResult);
       },
       filterOptions: [
         { label: "已完成", value: 0 },
@@ -164,6 +182,7 @@ const emit = defineEmits<{
 
 const message = useMessage();
 const missionList = ref<MissionInfo[]>([]);
+const missionColumn = ref<DataTableColumns<MissionInfo>>();
 
 const lastSelectedMissionId = ref<number | null>(null);
 
@@ -188,7 +207,8 @@ fetch(`./api/mission/mission_list`)
     if (res.code !== 200) {
       message.error(`API Error while loading mission list: ${res.code} ${res.message}`);
     } else {
-      missionList.value = res.data;
+      missionList.value = res.data.missionInfo;
+      missionColumn.value = createMissionListColumns(res.data.missionTypeMapping);
     }
   })
   .catch((e) => {
@@ -200,7 +220,7 @@ fetch(`./api/mission/mission_list`)
   <n-card title="任务列表">
     <div class="table-container">
       <n-data-table
-        :columns="createMissionListColumns()"
+        :columns="missionColumn"
         :data="missionList"
         :pagination="{ pageSize: 10 }"
         :row-props="rowProps"
