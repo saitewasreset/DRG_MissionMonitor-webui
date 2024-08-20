@@ -29,6 +29,7 @@ interface WeaponTableRow {
 
 interface CharacterTableRow {
   characterGameId: string;
+  validGameCount: number;
   averageDamage: number;
   averageCauseDamage: number;
   averageTakeDamage: number;
@@ -414,6 +415,14 @@ function createCharacterTableColumns(): DataTableColumns<CharacterTableRow> {
       },
     },
     {
+      title: "有效数据数",
+      key: "validGameCount",
+      align: "center",
+      render(row) {
+        return row.validGameCount.toFixed(2);
+      },
+    },
+    {
       title: "平均伤害",
       key: "averageDamage",
       align: "center",
@@ -469,6 +478,7 @@ function generateCharacterTableData() {
   for (const [characterGameId, characterData] of Object.entries(props.characterDamageInfo)) {
     characterTableData.value.push({
       characterGameId,
+      validGameCount: characterData.validGameCount,
       averageDamage: characterData.damage / characterData.validGameCount,
       averageCauseDamage: characterData.friendlyFire.cause / characterData.validGameCount,
       averageTakeDamage: characterData.friendlyFire.take / characterData.validGameCount,
