@@ -73,6 +73,20 @@ interface CharacterInfo {
   characterMapping: Record<string, string>;
 }
 
+interface CharacterGeneralData {
+  validCount: number;
+  reviveNum: number;
+  deathNum: number;
+  mineralsMined: number;
+  supplyCount: number;
+  supplyEfficiency: number;
+}
+
+interface CharacterGeneralInfo {
+  characterInfo: Record<string, CharacterGeneralData>;
+  characterMapping: Record<string, string>;
+}
+
 interface Response<T> {
   code: number;
   message: string;
@@ -87,6 +101,11 @@ interface MissionTypeInfoTableRow extends MissionTypeInfo {
 interface PlayerInfoTableRow extends PlayerInfo {
   playerName: string;
   characterMapping: Record<string, string>;
+}
+
+interface CharacterInfoTableRow extends CharacterGeneralData {
+  characterGameId: string;
+  characterName: string;
 }
 
 function createMissionTypeTableColumns(): DataTableColumns<MissionTypeInfoTableRow> {
@@ -426,6 +445,172 @@ function createPlayerInfoPlot(playerData: PlayerData) {
   Plotly.newPlot("player-info-plot", data, plotLayout);
 }
 
+function createCharacterInfoTableColumns(): DataTableColumns<CharacterInfoTableRow> {
+  return [
+    {
+      title: "角色",
+      key: "characterName",
+      render: (row) => {
+        return h("span", { class: generateCharacterClass(row.characterGameId) }, row.characterName);
+      },
+      align: "center",
+    },
+    {
+      title: "有效数据数",
+      key: "validCount",
+      sorter: (a, b) => a.validCount - b.validCount,
+      render: (row) => row.validCount.toFixed(2),
+      defaultSortOrder: "descend",
+      align: "center",
+    },
+    {
+      title: "平均救人数",
+      key: "averageReviveNum",
+      render: (row) => (row.reviveNum / row.validCount).toFixed(2),
+      sorter: (a, b) => a.reviveNum / a.validCount - b.reviveNum / b.validCount,
+      align: "center",
+    },
+    {
+      title: "平均倒地数",
+      key: "averageDeathNum",
+      render: (row) => (row.deathNum / row.validCount).toFixed(2),
+      sorter: (a, b) => a.deathNum / a.validCount - b.deathNum / b.validCount,
+      align: "center",
+    },
+    {
+      title: "平均采集量",
+      key: "averageMineralsMined",
+      render: (row) => nFormatter(row.mineralsMined / row.validCount, 2),
+      sorter: (a, b) => a.mineralsMined / a.validCount - b.mineralsMined / b.validCount,
+      align: "center",
+    },
+    {
+      title: "平均补给份数",
+      key: "averageSupplyCount",
+      render: (row) => (row.supplyCount / row.validCount).toFixed(2),
+      sorter: (a, b) => a.supplyCount / a.validCount - b.supplyCount / b.validCount,
+      align: "center",
+    },
+    {
+      title: "平均补给效率",
+      key: "averageSupplyEfficiency",
+      render: (row) => formatPercent(row.supplyEfficiency),
+      sorter: (a, b) => a.supplyEfficiency - b.supplyEfficiency,
+      align: "center",
+    },
+  ];
+}
+
+function generateCharacterInfoTableData(characterData: CharacterGeneralInfo) {
+  for (const [characterGameId, characterInfo] of Object.entries(characterData.characterInfo)) {
+    characterInfoTableData.value.push({
+      characterGameId,
+      characterName: characterData.characterMapping[characterGameId],
+      ...characterInfo,
+    });
+  }
+}
+
+function createCharacterInfoPlot(characterGeneralInfo: CharacterGeneralInfo) {
+  const plotLayout: Partial<Plotly.Layout> = {
+    width: 600,
+    height: 400,
+    grid: {
+      rows: 2,
+      columns: 2,
+    },
+  };
+
+  let characterLabels: string[] = [];
+  let characterColorList: string[] = [];
+  let characterReviveNumList: number[] = [];
+  let characterDeathNumList: number[] = [];
+  let characterMineralsMinedList: number[] = [];
+  let characterSupplyCountList: number[] = [];
+
+  const characterToColor: Record<string, string> = {
+    SCOUT: "#00BFFF",
+    DRILLER: "#DAA520",
+    ENGINEER: "#FF0000",
+    GUNNER: "#008000",
+  };
+
+  for (const [characterGameId, characterInfo] of Object.entries(
+    characterGeneralInfo.characterInfo,
+  )) {
+    characterLabels.push(characterGeneralInfo.characterMapping[characterGameId]);
+    characterColorList.push(characterToColor[characterGameId]);
+    characterReviveNumList.push(characterInfo.reviveNum / characterInfo.validCount);
+    characterDeathNumList.push(characterInfo.deathNum / characterInfo.validCount);
+    characterMineralsMinedList.push(characterInfo.mineralsMined / characterInfo.validCount);
+    characterSupplyCountList.push(characterInfo.supplyCount / characterInfo.validCount);
+  }
+
+  let data: Data[] = [
+    {
+      values: characterReviveNumList,
+      labels: characterLabels,
+      type: "pie",
+      name: "平均救人数",
+      marker: {
+        colors: characterColorList,
+      },
+      domain: {
+        row: 0,
+        column: 0,
+      },
+      hoverinfo: "label+value+percent",
+      title: {
+        text: "平均救人数",
+      },
+    },
+    {
+      values: characterDeathNumList,
+      labels: characterLabels,
+      type: "pie",
+      name: "平均倒地数",
+      domain: {
+        row: 0,
+        column: 1,
+      },
+      hoverinfo: "label+value+percent",
+      title: {
+        text: "平均倒地数",
+      },
+    },
+    {
+      values: characterMineralsMinedList,
+      labels: characterLabels,
+      type: "pie",
+      name: "平均采集量",
+      domain: {
+        row: 1,
+        column: 0,
+      },
+      hoverinfo: "label+value+percent",
+      title: {
+        text: "平均采集量",
+      },
+    },
+    {
+      values: characterSupplyCountList,
+      labels: characterLabels,
+      type: "pie",
+      name: "平均补给份数",
+      domain: {
+        row: 1,
+        column: 1,
+      },
+      hoverinfo: "label+value+percent",
+      title: {
+        text: "平均补给份数",
+      },
+    },
+  ];
+
+  Plotly.newPlot("character-info-plot", data, plotLayout);
+}
+
 const message = useMessage();
 const generalInfoData = ref<GeneralInfo>();
 const MissionInfoData = ref<MissionInfo>();
@@ -434,6 +619,7 @@ const CharacterInfoData = ref<CharacterInfo>();
 
 const missionTypeTableData = ref<MissionTypeInfoTableRow[]>([]);
 const playerInfoTableData = ref<PlayerInfoTableRow[]>([]);
+const characterInfoTableData = ref<CharacterInfoTableRow[]>([]);
 
 fetch("./api/general")
   .then((res) => res.json())
@@ -485,6 +671,17 @@ fetch("./api/general/character_info")
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
       CharacterInfoData.value = res.data;
+    }
+  });
+
+fetch("./api/general/character")
+  .then((res) => res.json())
+  .then((res: Response<CharacterGeneralInfo>) => {
+    if (res.code !== 200) {
+      message.error(`API Error: ${res.code} ${res.message}`);
+    } else {
+      generateCharacterInfoTableData(res.data);
+      createCharacterInfoPlot(res.data);
     }
   });
 
@@ -598,6 +795,16 @@ watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
       <div id="mission-type-plot"></div>
     </div>
   </n-card>
+  <n-card title="按角色">
+    <div class="table-plot-container">
+      <n-data-table
+        :columns="createCharacterInfoTableColumns()"
+        :data="characterInfoTableData"
+        :pagination="false"
+        style="width: fit-content"
+      ></n-data-table>
+      <div id="character-info-plot"></div></div
+  ></n-card>
   <n-card title="玩家">
     <div class="table-plot-container">
       <n-data-table
