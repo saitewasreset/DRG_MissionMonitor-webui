@@ -672,6 +672,9 @@ fetch("./api/general/character_info")
     } else {
       CharacterInfoData.value = res.data;
     }
+  })
+  .catch((err) => {
+    message.error(`HTTP Error: ${err}`);
   });
 
 fetch("./api/general/character")
@@ -683,6 +686,9 @@ fetch("./api/general/character")
       generateCharacterInfoTableData(res.data);
       createCharacterInfoPlot(res.data);
     }
+  })
+  .catch((err) => {
+    message.error(`HTTP Error: ${err}`);
   });
 
 watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
