@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { h, type Component } from "vue";
 
-import { ReportData, List } from "@vicons/carbon";
+import { ReportData, List, SummaryKpi } from "@vicons/carbon";
 import { TargetArrow20Filled } from "@vicons/fluent";
 
 import { NMenu, NIcon, type MenuOption } from "naive-ui";
@@ -29,6 +29,11 @@ const menuOptions: MenuOption[] = [
     label: "任务",
     key: "mission",
     icon: renderIcon(List),
+  },
+  {
+    label: "KPI",
+    key: "KPI",
+    icon: renderIcon(SummaryKpi),
   },
 ];
 </script>

@@ -18,6 +18,7 @@ import MissionComponent from "./components/MissionComponent.vue";
 import GeneralComponent from "./components/GeneralComponent.vue";
 import NavBar from "./components/NavBar.vue";
 import DamageComponent from "./components/DamageComponent.vue";
+import KPIComponent from "./components/KPIComponent.vue";
 
 const currentSelectComponentKey = ref("general");
 
@@ -25,6 +26,7 @@ const keyToComponent: Record<string, Component> = {
   general: GeneralComponent,
   mission: MissionComponent,
   damage: DamageComponent,
+  KPI: KPIComponent,
 };
 </script>
 
