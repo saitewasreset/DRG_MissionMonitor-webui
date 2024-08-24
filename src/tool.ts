@@ -3,6 +3,13 @@ interface GroupInfo {
   dataList: number[];
 }
 
+export const characterFilterOptions = [
+  { label: "钻机", value: "DRILLER" },
+  { label: "枪手", value: "GUNNER" },
+  { label: "工程", value: "ENGINEER" },
+  { label: "侦察", value: "SCOUT" },
+];
+
 export function getFirstGroupInfo<T>(
   objectList: T[],
   compar: (a: T, b: T) => number,
