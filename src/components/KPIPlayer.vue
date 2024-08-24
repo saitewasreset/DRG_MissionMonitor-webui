@@ -211,7 +211,7 @@ const playerSelected = ref<string>("");
 const playerSelectOptions = ref<{ label: string; value: string }[]>([]);
 const playerKPIInfoTableData = ref<Record<string, PlayerKPIInfoRow[]>>({});
 
-fetch("/api/kpi/player_kpi")
+fetch("./api/kpi/player_kpi")
   .then((response) => response.json())
   .then((data: Response<PlayerKPIInfo>) => {
     if (data.code !== 200) {
