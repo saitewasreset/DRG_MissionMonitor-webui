@@ -6,14 +6,9 @@ import { generateCharacterClass } from "@/formatter";
 import Plotly from "plotly.js-basic-dist";
 import type { Data } from "plotly.js-basic-dist";
 import { translate } from "@/mapping";
+import type { Response } from "@/type";
 
 type PlayerBasicInfo = Record<string, string>;
-
-interface PlayerBasicInfoResponse {
-  code: number;
-  message: string;
-  data: PlayerBasicInfo;
-}
 
 interface PlayerResourceInfo {
   resource: Record<string, number>;
@@ -24,12 +19,6 @@ interface PlayerResourceInfo {
 }
 
 type ResourceData = Record<string, PlayerResourceInfo>;
-
-interface ResourceDataResponse {
-  code: number;
-  message: string;
-  data: { info: ResourceData; resourceMapping: Record<string, string> };
-}
 
 interface NitraDataRow {
   playerName: string;
@@ -382,7 +371,7 @@ const playerResourceTableData = ref<PlayerResourceDataRow[]>([]);
 
 fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic`)
   .then((res) => res.json())
-  .then((data: PlayerBasicInfoResponse) => {
+  .then((data: Response<PlayerBasicInfo>) => {
     if (data.code !== 200) {
       message.error(`API Error: ${data.code} ${data.message}`);
     } else {
@@ -393,7 +382,7 @@ fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic
 
 fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/resource`)
   .then((res) => res.json())
-  .then((data: ResourceDataResponse) => {
+  .then((data: Response<{ info: ResourceData; resourceMapping: Record<string, string> }>) => {
     if (data.code !== 200) {
       message.error(`API Error: ${data.code} ${data.message}`);
     } else {

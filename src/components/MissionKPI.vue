@@ -4,6 +4,8 @@ import { translate } from "@/mapping";
 import { generateCharacterClass, nFormatter } from "@/formatter";
 import { NAlert, NTag, useMessage, NDataTable, type DataTableColumns } from "naive-ui";
 
+import type { Response } from "@/type";
+
 interface CharacterSubtypeKPIInfo {
   subtypeName: string;
   priorityTable: Record<string, number>;
@@ -14,12 +16,6 @@ interface KPIInfo {
   version: string;
   priorityTable: Record<string, number>;
   character: Record<string, Record<string, CharacterSubtypeKPIInfo>>;
-}
-
-interface KPIInfoResponse {
-  code: number;
-  message: string;
-  data: KPIInfo;
 }
 
 interface KPIComponent {
@@ -46,12 +42,6 @@ interface MissionKPIInfo {
   resourceTotal: number;
   component: KPIComponent[];
   rawKPI: number;
-}
-
-interface MissionKPIResponse {
-  code: number;
-  message: string;
-  data: MissionKPIInfo[];
 }
 
 interface KPIDataTableRow {
@@ -282,7 +272,7 @@ const kpiTableData = ref<KPIDataTableRow[]>([]);
 
 fetch("./api/kpi")
   .then((response) => response.json())
-  .then((data: KPIInfoResponse) => {
+  .then((data: Response<KPIInfo>) => {
     if (data.code !== 200) {
       message.error(`API Error while loading KPI Info: ${data.code} ${data.message}`);
     } else {
@@ -295,7 +285,7 @@ fetch("./api/kpi")
 
 fetch(`./api/mission/${props.missionId === undefined ? 1 : props.missionId}/kpi`)
   .then((response) => response.json())
-  .then((data: MissionKPIResponse) => {
+  .then((data: Response<MissionKPIInfo[]>) => {
     if (data.code !== 200) {
       message.error(`API Error while loading Mission KPI Info: ${data.code} ${data.message}`);
     } else {

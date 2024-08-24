@@ -13,6 +13,8 @@ import {
 
 import { translate } from "@/mapping";
 
+import type { Response } from "@/type";
+
 interface MissionInfo {
   missionId: number;
   beginTimestamp: number;
@@ -23,12 +25,6 @@ interface MissionInfo {
   rewardCredit: number;
   missionInvalid: boolean;
   missionInvalidReason: string;
-}
-
-interface MissionInfoResponse {
-  code: number;
-  message: string;
-  data: { missionInfo: MissionInfo[]; missionTypeMapping: Record<string, string> };
 }
 
 function renderValidIcon(valid: boolean) {
@@ -202,14 +198,16 @@ const rowProps = (row: MissionInfo) => {
 
 fetch(`./api/mission/mission_list`)
   .then((res) => res.json())
-  .then((res: MissionInfoResponse) => {
-    if (res.code !== 200) {
-      message.error(`API Error while loading mission list: ${res.code} ${res.message}`);
-    } else {
-      missionList.value = res.data.missionInfo;
-      missionColumn.value = createMissionListColumns(res.data.missionTypeMapping);
-    }
-  })
+  .then(
+    (res: Response<{ missionInfo: MissionInfo[]; missionTypeMapping: Record<string, string> }>) => {
+      if (res.code !== 200) {
+        message.error(`API Error while loading mission list: ${res.code} ${res.message}`);
+      } else {
+        missionList.value = res.data.missionInfo;
+        missionColumn.value = createMissionListColumns(res.data.missionTypeMapping);
+      }
+    },
+  )
   .catch((e) => {
     message.error(`HTTP Error while loading mission list: ${e}`);
   });

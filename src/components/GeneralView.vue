@@ -16,6 +16,8 @@ import { formatMissionTime, formatPercent, nFormatter, generateCharacterClass } 
 
 import Plotly, { type Data } from "plotly.js-basic-dist";
 
+import type { Response } from "@/type";
+
 interface DeltaData {
   prev: number;
   recent: number;
@@ -85,12 +87,6 @@ interface CharacterGeneralData {
 interface CharacterGeneralInfo {
   characterInfo: Record<string, CharacterGeneralData>;
   characterMapping: Record<string, string>;
-}
-
-interface Response<T> {
-  code: number;
-  message: string;
-  data: T;
 }
 
 interface MissionTypeInfoTableRow extends MissionTypeInfo {

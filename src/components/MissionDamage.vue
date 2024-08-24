@@ -1,12 +1,6 @@
 <script setup lang="ts">
 type PlayerBasicInfo = Record<string, string>;
 
-interface PlayerBasicInfoResponse {
-  code: number;
-  message: string;
-  data: PlayerBasicInfo;
-}
-
 interface FriendlyFireInfo {
   cause: Record<string, number>;
   take: Record<string, number>;
@@ -86,6 +80,8 @@ import { translate } from "../mapping";
 
 import Plotly from "plotly.js-basic-dist";
 import type { Data } from "plotly.js-basic-dist";
+
+import type { Response } from "@/type";
 
 function createDamageTableColumns(): DataTableColumns<DamageTableRow> {
   return [
@@ -752,7 +748,7 @@ const message = useMessage();
 
 fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic`)
   .then((res) => res.json())
-  .then((data: PlayerBasicInfoResponse) => {
+  .then((data: Response<PlayerBasicInfo>) => {
     if (data.code !== 200) {
       message.error(`API Error: ${data.code} ${data.message}`);
     }

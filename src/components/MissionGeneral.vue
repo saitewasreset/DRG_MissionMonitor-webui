@@ -38,12 +38,6 @@ interface MissionGeneralData {
   totalSupplyCount: number;
 }
 
-interface missionGeneralResponse {
-  code: number;
-  message: string;
-  data: MissionGeneralData;
-}
-
 import { ref, computed, h } from "vue";
 
 import {
@@ -67,6 +61,7 @@ import {
 } from "../formatter";
 
 import { translate } from "../mapping";
+import type { Response } from "@/type";
 
 const missionData = ref<MissionGeneralData | null>(null);
 
@@ -159,7 +154,7 @@ function createColumns(): DataTableColumns<MissionGeneralTableRowData> {
 
 fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/general`)
   .then((data) => data.json())
-  .then((json: missionGeneralResponse) => {
+  .then((json: Response<MissionGeneralData>) => {
     if (json.code !== 200) {
       message.error(`API Error: ${json.code} ${json.message}`);
     } else {
