@@ -11,7 +11,7 @@ export function formatMissionDate(timeStamp: number | undefined) {
 
 export function formatMissionDateRelative(timeStamp: number | undefined) {
   if (timeStamp !== undefined) {
-    return formatRelative(new Date(timeStamp * 1000), new Date(), { locale: zhCN });
+    return formatRelative(new Date((timeStamp - 8 * 3600) * 1000), new Date(), { locale: zhCN });
   } else {
     return "";
   }
