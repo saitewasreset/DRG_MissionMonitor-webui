@@ -5,6 +5,8 @@ import { translate } from "@/mapping";
 import { generateCharacterClass, formatMissionDate } from "@/formatter";
 import { characterFilterOptions } from "@/tool";
 
+import { useRouter } from "vue-router";
+
 import type { Response } from "@/type";
 
 interface MissionKPIInfo {
@@ -37,6 +39,7 @@ interface OverallKPIInfoRow {
 }
 
 interface PlayerKPIInfoRow {
+  missionId: number;
   missionBeginTimestamp: number;
   characterGameId: string;
   characterSubtype: string;
@@ -192,6 +195,7 @@ function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
     for (const characterInfo of Object.values(playerInfo.byCharacter)) {
       for (const missionKPIInfo of characterInfo.missionKPIList) {
         playerKPIInfoTableData.value[playerName].push({
+          missionId: missionKPIInfo.missionId,
           missionBeginTimestamp: missionKPIInfo.beginTimestamp,
           characterGameId: characterInfo.characterGameId,
           characterSubtype: characterInfo.characterSubtype,
@@ -206,12 +210,22 @@ function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
 }
 
 const message = useMessage();
+const router = useRouter();
 
 const playerKPIData = ref<PlayerKPIInfo>({});
 const overallKPIInfoTableData = ref<OverallKPIInfoRow[]>([]);
 const playerSelected = ref<string>("");
 const playerSelectOptions = ref<{ label: string; value: string }[]>([]);
 const playerKPIInfoTableData = ref<Record<string, PlayerKPIInfoRow[]>>({});
+
+const playerKPIInfoTableRowProps = (row: PlayerKPIInfoRow) => {
+  return {
+    style: "cursor: pointer;",
+    onClick: () => {
+      router.push({ name: "missionDetails", params: { id: row.missionId } });
+    },
+  };
+};
 
 fetch("./api/kpi/player_kpi")
   .then((response) => response.json())
@@ -252,6 +266,7 @@ fetch("./api/kpi/player_kpi")
         :columns="createPlayerKPIInfoTableColumns()"
         :data="playerKPIInfoTableData[playerSelected]"
         :pagination="{ pageSize: 10 }"
+        :row-props="playerKPIInfoTableRowProps"
         style="width: fit-content"
       ></n-data-table>
     </n-flex>
