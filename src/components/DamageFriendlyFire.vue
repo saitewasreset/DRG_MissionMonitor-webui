@@ -503,7 +503,7 @@ watch(
     <n-select
       v-model:value="currentSelectedPlayer"
       :options="selectOptions"
-      style="width: fit-content"
+      style="max-width: 250px"
     ></n-select>
     <div>
       <n-card title="受到友伤">
