@@ -38,7 +38,7 @@ interface MissionGeneralData {
   totalSupplyCount: number;
 }
 
-import { ref, computed, h } from "vue";
+import { ref, computed, h, watch } from "vue";
 
 import {
   useMessage,
@@ -80,9 +80,10 @@ const props = defineProps<{
 function generateTableData(
   playerInfo: Record<string, MissionGeneralPlayerInfo>,
   missionTime: number,
-) {
+): MissionGeneralTableRowData[] {
+  let result = [];
   for (const [playerName, playerData] of Object.entries(playerInfo)) {
-    tableData.value.push({
+    result.push({
       playerName,
       heroGameId: playerData.heroGameId,
       playerRank: playerData.playerRank,
@@ -95,6 +96,8 @@ function generateTableData(
       playerEscaped: playerData.playerEscaped == 1 ? "是" : "否",
     });
   }
+
+  return result;
 }
 
 function createColumns(): DataTableColumns<MissionGeneralTableRowData> {
@@ -152,19 +155,25 @@ function createColumns(): DataTableColumns<MissionGeneralTableRowData> {
   ];
 }
 
-fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/general`)
-  .then((data) => data.json())
-  .then((json: Response<MissionGeneralData>) => {
-    if (json.code !== 200) {
-      message.error(`API Error: ${json.code} ${json.message}`);
-    } else {
-      missionData.value = json.data;
-      generateTableData(json.data.playerInfo, json.data.missionTime);
-    }
-  })
-  .catch((e) => {
-    message.error(`HTTP Error: ${e}`);
-  });
+watch(
+  () => props.missionId,
+  () => {
+    fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/general`)
+      .then((data) => data.json())
+      .then((json: Response<MissionGeneralData>) => {
+        if (json.code !== 200) {
+          message.error(`API Error: ${json.code} ${json.message}`);
+        } else {
+          missionData.value = json.data;
+          tableData.value = generateTableData(json.data.playerInfo, json.data.missionTime);
+        }
+      })
+      .catch((e) => {
+        message.error(`HTTP Error: ${e}`);
+      });
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

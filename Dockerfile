@@ -16,4 +16,5 @@ RUN pnpm run build
 # production stage
 FROM nginx:stable-alpine as production-stage
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/nginx_default.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]

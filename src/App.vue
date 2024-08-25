@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Component } from "vue";
+import { ref, watch } from "vue";
 import {
   NAlert,
   NIcon,
@@ -14,22 +14,30 @@ import {
 } from "naive-ui";
 import { mappingError } from "./mapping";
 import { TaskAssetView, FavoriteFilled, LogoGithub } from "@vicons/carbon";
-import MissionComponent from "./components/MissionComponent.vue";
-import GeneralComponent from "./components/GeneralComponent.vue";
 import NavBar from "./components/NavBar.vue";
-import DamageComponent from "./components/DamageComponent.vue";
-import KPIComponent from "./components/KPIComponent.vue";
-import InfoComponent from "./components/InfoComponent.vue";
 
+import { RouterView, useRoute, useRouter } from "vue-router";
+
+const route = useRoute();
+const router = useRouter();
 const currentSelectComponentKey = ref("general");
 
-const keyToComponent: Record<string, Component> = {
-  general: GeneralComponent,
-  mission: MissionComponent,
-  damage: DamageComponent,
-  KPI: KPIComponent,
-  info: InfoComponent,
-};
+watch(
+  () => route.name,
+  () => {
+    if (route.name != null) {
+      if (typeof route.name === "string") {
+        currentSelectComponentKey.value = route.name;
+      }
+    }
+  },
+);
+
+watch(currentSelectComponentKey, (value) => {
+  if (value != null) {
+    router.push({ name: value });
+  }
+});
 </script>
 
 <template>
@@ -59,7 +67,7 @@ const keyToComponent: Record<string, Component> = {
           <NavBar v-model="currentSelectComponentKey"></NavBar>
         </n-layout-sider>
         <n-layout-content>
-          <component :is="keyToComponent[currentSelectComponentKey]"></component>
+          <RouterView></RouterView>
         </n-layout-content>
       </n-layout>
       <n-layout-footer bordered position="absolute" style="height: 64px; padding: 10px">

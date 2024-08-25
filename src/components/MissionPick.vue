@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, h } from "vue";
+import { ref, h, watch } from "vue";
 import { useMessage } from "naive-ui";
 import { NDataTable, NCard, type DataTableColumns } from "naive-ui";
 import { generateCharacterClass } from "@/formatter";
@@ -98,7 +98,8 @@ function createNitraTableColumns(): DataTableColumns<NitraDataRow> {
   ];
 }
 
-function generateNitraTableData(data: ResourceData) {
+function generateNitraTableData(data: ResourceData): NitraDataRow[] {
+  let result = [];
   for (const [playerName, playerData] of Object.entries(data)) {
     let nitra = 0.0;
     if ("RES_VEIN_Nitra" in playerData.resource) {
@@ -116,7 +117,7 @@ function generateNitraTableData(data: ResourceData) {
     }
 
     const netNitra = nitra - supplyCount * 20;
-    nitraTableData.value.push({
+    result.push({
       playerName,
       nitra,
       supplyCount,
@@ -124,6 +125,8 @@ function generateNitraTableData(data: ResourceData) {
       netNitra,
     });
   }
+
+  return result;
 }
 
 function createNitraPlot(resourceData: ResourceData) {
@@ -211,8 +214,10 @@ function createResourceTableColumns(): DataTableColumns<ResourceDataRow> {
   ];
 }
 
-function generateResourceTableData(data: ResourceData) {
+function generateResourceTableData(data: ResourceData): ResourceDataRow[] {
   let resourceMap: Record<string, number> = {};
+
+  let result = [];
 
   for (const playerData of Object.values(data)) {
     for (const [resourceName, amount] of Object.entries(playerData.resource)) {
@@ -225,8 +230,10 @@ function generateResourceTableData(data: ResourceData) {
   }
 
   for (const [resourceName, totalAmount] of Object.entries(resourceMap)) {
-    resourceTableData.value.push({ resourceName, totalAmount });
+    result.push({ resourceName, totalAmount });
   }
+
+  return result;
 }
 
 function createResourcePlot(resourceData: ResourceData, mapping: Record<string, string>) {
@@ -300,7 +307,8 @@ function createPlayerResourceTableColumn(): DataTableColumns<PlayerResourceDataR
   ];
 }
 
-function generatePlayerResourceTableData(data: ResourceData) {
+function generatePlayerResourceTableData(data: ResourceData): PlayerResourceDataRow[] {
+  let result = [];
   for (const [playerName, playerData] of Object.entries(data)) {
     let childrenRowList: PlayerResourceDataRow[] = [];
     let totalAmount = 0;
@@ -308,12 +316,14 @@ function generatePlayerResourceTableData(data: ResourceData) {
       childrenRowList.push({ playerName: translate(resourceGameId).value, amount });
       totalAmount += amount;
     }
-    playerResourceTableData.value.push({
+    result.push({
       playerName,
       amount: totalAmount,
       children: childrenRowList,
     });
   }
+
+  return result;
 }
 
 function createPlayerResourcePlot(resourceData: ResourceData) {
@@ -369,36 +379,42 @@ const resourceTableData = ref<ResourceDataRow[]>([]);
 
 const playerResourceTableData = ref<PlayerResourceDataRow[]>([]);
 
-fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic`)
-  .then((res) => res.json())
-  .then((data: Response<PlayerBasicInfo>) => {
-    if (data.code !== 200) {
-      message.error(`API Error: ${data.code} ${data.message}`);
-    } else {
-      playerCharacterMap.value = data.data;
-    }
-  })
-  .catch((e) => message.error(`HTTP error: ${e}`));
+watch(
+  () => props.missionId,
+  () => {
+    fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic`)
+      .then((res) => res.json())
+      .then((data: Response<PlayerBasicInfo>) => {
+        if (data.code !== 200) {
+          message.error(`API Error: ${data.code} ${data.message}`);
+        } else {
+          playerCharacterMap.value = data.data;
+        }
+      })
+      .catch((e) => message.error(`HTTP error: ${e}`));
 
-fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/resource`)
-  .then((res) => res.json())
-  .then((data: Response<{ info: ResourceData; resourceMapping: Record<string, string> }>) => {
-    if (data.code !== 200) {
-      message.error(`API Error: ${data.code} ${data.message}`);
-    } else {
-      resourceData.value = data.data.info;
+    fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/resource`)
+      .then((res) => res.json())
+      .then((data: Response<{ info: ResourceData; resourceMapping: Record<string, string> }>) => {
+        if (data.code !== 200) {
+          message.error(`API Error: ${data.code} ${data.message}`);
+        } else {
+          resourceData.value = data.data.info;
 
-      generateNitraTableData(data.data.info);
-      createNitraPlot(data.data.info);
+          nitraTableData.value = generateNitraTableData(data.data.info);
+          createNitraPlot(data.data.info);
 
-      generateResourceTableData(data.data.info);
-      createResourcePlot(data.data.info, data.data.resourceMapping);
+          resourceTableData.value = generateResourceTableData(data.data.info);
+          createResourcePlot(data.data.info, data.data.resourceMapping);
 
-      generatePlayerResourceTableData(data.data.info);
-      createPlayerResourcePlot(data.data.info);
-    }
-  })
-  .catch((e) => message.error(`HTTP error: ${e}`));
+          playerResourceTableData.value = generatePlayerResourceTableData(data.data.info);
+          createPlayerResourcePlot(data.data.info);
+        }
+      })
+      .catch((e) => message.error(`HTTP error: ${e}`));
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

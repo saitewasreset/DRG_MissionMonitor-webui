@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, h } from "vue";
+import { ref, h, watch } from "vue";
 import { translate } from "@/mapping";
 import { generateCharacterClass, nFormatter } from "@/formatter";
 import { NAlert, NTag, useMessage, NDataTable, type DataTableColumns } from "naive-ui";
@@ -233,8 +233,9 @@ function createKPITableColumns(): DataTableColumns<KPIDataTableRow> {
   ];
 }
 
-function generateKPITableData(missionData: MissionKPIInfo[]) {
-  kpiTableData.value = missionData.map((missionData) => {
+function generateKPITableData(missionData: MissionKPIInfo[]): KPIDataTableRow[] {
+  let result = [];
+  result = missionData.map((missionData) => {
     return {
       playerName: missionData.playerName,
       heroGameId: missionData.heroGameId,
@@ -252,6 +253,8 @@ function generateKPITableData(missionData: MissionKPIInfo[]) {
       rawKPI: missionData.rawKPI,
     };
   });
+
+  return result;
 }
 
 const props = defineProps<{
@@ -270,32 +273,38 @@ const missionKpiInfo = ref<MissionKPIInfo[]>([]);
 
 const kpiTableData = ref<KPIDataTableRow[]>([]);
 
-fetch("./api/kpi")
-  .then((response) => response.json())
-  .then((data: Response<KPIInfo>) => {
-    if (data.code !== 200) {
-      message.error(`API Error while loading KPI Info: ${data.code} ${data.message}`);
-    } else {
-      kpiInfo.value = data.data;
-    }
-  })
-  .catch((e) => {
-    message.error(`HTTP Error while loading KPI Info: ${e}`);
-  });
+watch(
+  () => props.missionId,
+  () => {
+    fetch("./api/kpi")
+      .then((response) => response.json())
+      .then((data: Response<KPIInfo>) => {
+        if (data.code !== 200) {
+          message.error(`API Error while loading KPI Info: ${data.code} ${data.message}`);
+        } else {
+          kpiInfo.value = data.data;
+        }
+      })
+      .catch((e) => {
+        message.error(`HTTP Error while loading KPI Info: ${e}`);
+      });
 
-fetch(`./api/mission/${props.missionId === undefined ? 1 : props.missionId}/kpi`)
-  .then((response) => response.json())
-  .then((data: Response<MissionKPIInfo[]>) => {
-    if (data.code !== 200) {
-      message.error(`API Error while loading Mission KPI Info: ${data.code} ${data.message}`);
-    } else {
-      missionKpiInfo.value = data.data;
-      generateKPITableData(data.data);
-    }
-  })
-  .catch((e) => {
-    message.error(`HTTP Error while loading Mission KPI Info: ${e}`);
-  });
+    fetch(`./api/mission/${props.missionId === undefined ? 1 : props.missionId}/kpi`)
+      .then((response) => response.json())
+      .then((data: Response<MissionKPIInfo[]>) => {
+        if (data.code !== 200) {
+          message.error(`API Error while loading Mission KPI Info: ${data.code} ${data.message}`);
+        } else {
+          missionKpiInfo.value = data.data;
+          kpiTableData.value = generateKPITableData(data.data);
+        }
+      })
+      .catch((e) => {
+        message.error(`HTTP Error while loading Mission KPI Info: ${e}`);
+      });
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <n-tag type="info">当前KPI版本：{{ kpiInfo.version }}</n-tag>

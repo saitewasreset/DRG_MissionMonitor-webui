@@ -157,9 +157,10 @@ function createMissionTypeTableColumns(): DataTableColumns<MissionTypeInfoTableR
   ];
 }
 
-function createMissionTypeTableData(missionInfo: MissionInfo) {
+function createMissionTypeTableData(missionInfo: MissionInfo): MissionTypeInfoTableRow[] {
+  let result = [];
   for (const [missionTypeId, missionTypeInfo] of Object.entries(missionInfo.missionTypeData)) {
-    missionTypeTableData.value.push({
+    result.push({
       missionType: missionTypeId,
       mappedType:
         missionInfo.missionTypeMap[missionTypeId] === undefined
@@ -168,6 +169,8 @@ function createMissionTypeTableData(missionInfo: MissionInfo) {
       ...missionTypeInfo,
     });
   }
+
+  return result;
 }
 
 function createMissionTypePlot(missionInfo: MissionInfo) {
@@ -322,14 +325,17 @@ function createPlayerInfoTableColumns(): DataTableColumns<PlayerInfoTableRow> {
   ];
 }
 
-function createPlayerInfoTableData(playerData: PlayerData) {
+function createPlayerInfoTableData(playerData: PlayerData): PlayerInfoTableRow[] {
+  let result = [];
   for (const [playerName, playerInfo] of Object.entries(playerData.playerData)) {
-    playerInfoTableData.value.push({
+    result.push({
       playerName,
       characterMapping: playerData.characterMap,
       ...playerInfo,
     });
   }
+
+  return result;
 }
 
 function createPlayerInfoPlot(playerData: PlayerData) {
@@ -497,14 +503,19 @@ function createCharacterInfoTableColumns(): DataTableColumns<CharacterInfoTableR
   ];
 }
 
-function generateCharacterInfoTableData(characterData: CharacterGeneralInfo) {
+function generateCharacterInfoTableData(
+  characterData: CharacterGeneralInfo,
+): CharacterInfoTableRow[] {
+  let result = [];
   for (const [characterGameId, characterInfo] of Object.entries(characterData.characterInfo)) {
-    characterInfoTableData.value.push({
+    result.push({
       characterGameId,
       characterName: characterData.characterMapping[characterGameId],
       ...characterInfo,
     });
   }
+
+  return result;
 }
 
 function createCharacterInfoPlot(characterGeneralInfo: CharacterGeneralInfo) {
@@ -637,7 +648,7 @@ fetch("./api/general/mission_type")
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
       MissionInfoData.value = res.data;
-      createMissionTypeTableData(res.data);
+      missionTypeTableData.value = createMissionTypeTableData(res.data);
       createMissionTypePlot(res.data);
     }
   })
@@ -652,7 +663,7 @@ fetch("./api/general/player")
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
       PlayerInfoData.value = res.data;
-      createPlayerInfoTableData(res.data);
+      playerInfoTableData.value = createPlayerInfoTableData(res.data);
       createPlayerInfoPlot(res.data);
     }
   })
@@ -679,7 +690,7 @@ fetch("./api/general/character")
     if (res.code !== 200) {
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
-      generateCharacterInfoTableData(res.data);
+      characterInfoTableData.value = generateCharacterInfoTableData(res.data);
       createCharacterInfoPlot(res.data);
     }
   })

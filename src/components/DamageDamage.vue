@@ -132,9 +132,10 @@ function createOverallTableColumns(): DataTableColumns<OverallTableRow> {
   ];
 }
 
-function generateOverallTableData() {
+function generateOverallTableData(): OverallTableRow[] {
+  let result = [];
   if (props.overallDamageInfo === undefined) {
-    return;
+    return [];
   }
   for (const [playerName, playerData] of Object.entries(props.overallDamageInfo.info)) {
     let totalDamage = 0.0;
@@ -148,7 +149,7 @@ function generateOverallTableData() {
       totalKill += kill;
     }
 
-    overallTableData.value.push({
+    result.push({
       playerName,
       validGameCount: playerData.validGameCount,
       averageKillNum: totalKill / playerData.validGameCount,
@@ -158,6 +159,8 @@ function generateOverallTableData() {
         totalDamage / ((playerData.averageSupplyCount + 1) * playerData.validGameCount),
     });
   }
+
+  return result;
 }
 
 function createDamagePlot() {
@@ -315,12 +318,13 @@ function createWeaponTableColumns(): DataTableColumns<WeaponTableRow> {
   ];
 }
 
-function createWeaponTableData() {
+function createWeaponTableData(): WeaponTableRow[] {
   if (props.weaponDamageInfo === undefined) {
-    return;
+    return [];
   }
+  let result = [];
   for (const [weaponName, weaponData] of Object.entries(props.weaponDamageInfo)) {
-    weaponTableData.value.push({
+    result.push({
       weaponName,
       weaponCharacter: weaponData.heroGameId,
       validGameCount: weaponData.validGameCount,
@@ -329,6 +333,8 @@ function createWeaponTableData() {
       friendlyFireRate: weaponData.friendlyFire / (weaponData.damage + weaponData.friendlyFire),
     });
   }
+
+  return result;
 }
 
 function createWeaponPlot() {
@@ -471,12 +477,15 @@ function createCharacterTableColumns(): DataTableColumns<CharacterTableRow> {
   ];
 }
 
-function generateCharacterTableData() {
+function generateCharacterTableData(): CharacterTableRow[] {
   if (props.characterDamageInfo === undefined) {
-    return;
+    return [];
   }
+
+  let result = [];
+
   for (const [characterGameId, characterData] of Object.entries(props.characterDamageInfo)) {
-    characterTableData.value.push({
+    result.push({
       characterGameId,
       validGameCount: characterData.validGameCount,
       averageDamage: characterData.damage / characterData.validGameCount,
@@ -488,6 +497,8 @@ function generateCharacterTableData() {
       heartbrokenRate: characterData.friendlyFire.take / characterData.friendlyFire.cause,
     });
   }
+
+  return result;
 }
 
 function createCharacterPlot() {
@@ -629,10 +640,12 @@ function createEnemyTableColumns(): DataTableColumns<EnemyTableRow> {
   ];
 }
 
-function generateEnemyTableData() {
+function generateEnemyTableData(): EnemyTableRow[] {
   if (props.overallDamageInfo === undefined) {
-    return;
+    return [];
   }
+
+  let result = [];
 
   let enemyDamageMap: Record<string, number> = {};
   let enemyKillMap: Record<string, number> = {};
@@ -662,12 +675,14 @@ function generateEnemyTableData() {
   }
 
   for (const [mappedEnemyName, totalKill] of Object.entries(enemyKillMap)) {
-    enemyTableData.value.push({
+    result.push({
       mappedEnemyName,
       totalKill: totalKill,
       totalDamage: enemyDamageMap[mappedEnemyName],
     });
   }
+
+  return result;
 }
 
 function createEnemyPlot() {
@@ -774,10 +789,10 @@ function createEnemyPlot() {
 watch(
   () => props.overallDamageInfo,
   () => {
-    generateOverallTableData();
+    overallTableData.value = generateOverallTableData();
     createDamagePlot();
 
-    generateEnemyTableData();
+    enemyTableData.value = generateEnemyTableData();
     createEnemyPlot();
   },
 );
@@ -785,7 +800,7 @@ watch(
 watch(
   () => props.weaponDamageInfo,
   () => {
-    createWeaponTableData();
+    weaponTableData.value = createWeaponTableData();
     createWeaponPlot();
   },
 );
@@ -793,7 +808,7 @@ watch(
 watch(
   () => props.characterDamageInfo,
   () => {
-    generateCharacterTableData();
+    characterTableData.value = generateCharacterTableData();
     createCharacterPlot();
   },
 );

@@ -78,15 +78,18 @@ function createBrothersTableColumns(): DataTableColumns<BrothersTableRow> {
   ];
 }
 
-function generateBrothersTableData(playerData: Record<string, BrotherInfo>) {
+function generateBrothersTableData(playerData: Record<string, BrotherInfo>): BrothersTableRow[] {
+  let result = [];
   for (const [playerName, data] of Object.entries(playerData)) {
-    brothersTableData.value.push({
+    result.push({
       playerName,
       count: data.count,
       presenceTime: data.presenceTime,
       lastSpot: data.lastSpot,
     });
   }
+
+  return result;
 }
 
 const message = useMessage();
@@ -106,7 +109,7 @@ fetch("./api/info/brothers")
       message.error(`API error while fetching brothers data: ${data.code} ${data.message}`);
     } else {
       overallBrothersInfo.value = data.data.overall;
-      generateBrothersTableData(data.data.player);
+      brothersTableData.value = generateBrothersTableData(data.data.player);
     }
   })
   .catch((error) => {

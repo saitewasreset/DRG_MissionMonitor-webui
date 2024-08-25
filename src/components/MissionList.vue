@@ -4,6 +4,8 @@ import { useMessage, NDataTable, NIcon, NCard, type DataTableColumns } from "nai
 
 import { WarningAltFilled, CheckmarkFilled, Error } from "@vicons/carbon";
 
+import { useRouter } from "vue-router";
+
 import {
   formatMissionDate,
   formatMissionTime,
@@ -163,18 +165,7 @@ function createMissionListColumns(
   ];
 }
 
-const emit = defineEmits<{
-  (
-    e: "selectedMission",
-    missionInfo: {
-      missionId: number;
-      missionInvalid: boolean;
-      missionInvalidReason: string;
-      missionBeginTimestamp: number;
-    },
-  ): void;
-}>();
-
+const router = useRouter();
 const message = useMessage();
 const missionList = ref<MissionInfo[]>([]);
 const missionColumn = ref<DataTableColumns<MissionInfo>>();
@@ -185,13 +176,7 @@ const rowProps = (row: MissionInfo) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      lastSelectedMissionId.value = row.missionId;
-      emit("selectedMission", {
-        missionId: row.missionId,
-        missionInvalid: row.missionInvalid,
-        missionInvalidReason: row.missionInvalidReason,
-        missionBeginTimestamp: row.beginTimestamp,
-      });
+      router.push({ name: "missionDetails", params: { id: row.missionId.toString() } });
     },
   };
 };

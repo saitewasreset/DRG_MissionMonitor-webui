@@ -82,6 +82,7 @@ function createOverallKPIInfoTableColumns(): DataTableColumns<OverallKPIInfoRow>
 }
 
 function generateOverallKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
+  overallKPIInfoTableData.value = [];
   for (const [playerName, playerInfo] of Object.entries(playerKPIData)) {
     const row: OverallKPIInfoRow = {
       playerName,
@@ -185,6 +186,7 @@ function createPlayerKPIInfoTableColumns(): DataTableColumns<PlayerKPIInfoRow> {
 }
 
 function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
+  playerKPIInfoTableData.value = {};
   for (const [playerName, playerInfo] of Object.entries(playerKPIData)) {
     playerKPIInfoTableData.value[playerName] = [];
     for (const characterInfo of Object.values(playerInfo.byCharacter)) {

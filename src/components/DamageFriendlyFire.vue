@@ -98,10 +98,12 @@ function createFriendlyFireTableColumns(): DataTableColumns<FriendlyFireTableRow
   ];
 }
 
-function generateFriendlyFireTableData() {
+function generateFriendlyFireTableData(): FriendlyFireTableRow[] {
   if (props.overallDamageInfo === undefined) {
-    return;
+    return [];
   }
+
+  let result = [];
 
   for (const [playerName, playerDamageInfo] of Object.entries(props.overallDamageInfo.info)) {
     let totalDamage = 0.0;
@@ -120,7 +122,7 @@ function generateFriendlyFireTableData() {
       totalTake += take.damage;
     }
 
-    friendlyFireTableData.value.push({
+    result.push({
       playerName,
       validGameCount: playerDamageInfo.validGameCount,
       averageDamage: totalDamage / playerDamageInfo.validGameCount,
@@ -130,6 +132,8 @@ function generateFriendlyFireTableData() {
       heartbrokenRate: totalTake / totalCause,
     });
   }
+
+  return result;
 }
 
 function createPlot() {
@@ -308,14 +312,16 @@ function createTakeTableColumns(): DataTableColumns<PlayerTakeRow> {
   ];
 }
 
-function generateTakeTableData() {
+function generateTakeTableData(): PlayerTakeRow[] {
   if (props.overallDamageInfo === undefined) {
-    return;
+    return [];
   }
+
+  let result = [];
 
   const selectedPlayerName = currentSelectedPlayer.value;
   if (selectedPlayerName === null) {
-    return;
+    return [];
   }
 
   for (const [playerName, playerDamageInfo] of Object.entries(props.overallDamageInfo.info)) {
@@ -324,7 +330,7 @@ function generateTakeTableData() {
         if (takeDamage.gameCount === 0) {
           continue;
         }
-        takeTableData.value.push({
+        result.push({
           causePlayerName,
           totalDamage: takeDamage.damage,
           validGameCount: takeDamage.gameCount,
@@ -333,16 +339,20 @@ function generateTakeTableData() {
       }
     }
   }
+
+  return result;
 }
 
-function generateCauseTableData() {
+function generateCauseTableData(): PlayerCauseRow[] {
   if (props.overallDamageInfo === undefined) {
-    return;
+    return [];
   }
+
+  let result = [];
 
   const selectedPlayerName = currentSelectedPlayer.value;
   if (selectedPlayerName === null) {
-    return;
+    return [];
   }
 
   for (const [playerName, playerDamageInfo] of Object.entries(props.overallDamageInfo.info)) {
@@ -351,7 +361,7 @@ function generateCauseTableData() {
         if (causeDamage.gameCount === 0) {
           continue;
         }
-        causeTableData.value.push({
+        result.push({
           takePlayerName,
           totalDamage: causeDamage.damage,
           validGameCount: causeDamage.gameCount,
@@ -360,6 +370,8 @@ function generateCauseTableData() {
       }
     }
   }
+
+  return result;
 }
 
 function createCausePlot() {
@@ -462,11 +474,11 @@ const takeTableData = ref<PlayerTakeRow[]>([]);
 watch(
   () => props.overallDamageInfo,
   () => {
-    generateFriendlyFireTableData();
+    friendlyFireTableData.value = generateFriendlyFireTableData();
     createPlot();
     initSelect();
-    generateTakeTableData();
-    generateCauseTableData();
+    takeTableData.value = generateTakeTableData();
+    causeTableData.value = generateCauseTableData();
     createTakePlot();
     createCausePlot();
   },
@@ -475,10 +487,8 @@ watch(
 watch(
   () => currentSelectedPlayer.value,
   () => {
-    takeTableData.value = [];
-    causeTableData.value = [];
-    generateTakeTableData();
-    generateCauseTableData();
+    takeTableData.value = generateTakeTableData();
+    causeTableData.value = generateCauseTableData();
     createTakePlot();
     createCausePlot();
   },

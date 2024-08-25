@@ -65,7 +65,7 @@ interface EnemyTableRow {
   damage: number;
 }
 
-import { ref, h } from "vue";
+import { ref, h, watch } from "vue";
 
 import {
   useMessage,
@@ -144,7 +144,10 @@ function createDamageTableColumns(): DataTableColumns<DamageTableRow> {
   ];
 }
 
-function generateDamageInfoTableData(playerDamageInfoData: Record<string, PlayerDamageInfo>) {
+function generateDamageInfoTableData(
+  playerDamageInfoData: Record<string, PlayerDamageInfo>,
+): DamageTableRow[] {
+  let result = [];
   for (const [playerName, playerData] of Object.entries(playerDamageInfoData)) {
     let totalKillCount = 0;
     let totalDamage = 0.0;
@@ -157,7 +160,7 @@ function generateDamageInfoTableData(playerDamageInfoData: Record<string, Player
       totalDamage += damage;
     }
 
-    damgeInfoTableData.value.push({
+    result.push({
       playerName,
       kill: totalKillCount,
       damage: totalDamage,
@@ -165,6 +168,8 @@ function generateDamageInfoTableData(playerDamageInfoData: Record<string, Player
       damagePerSupply: totalDamage / (playerData.supplyCount + 1),
     });
   }
+
+  return result;
 }
 
 function createDamagePlot(playerDamageInfoData: Record<string, PlayerDamageInfo>) {
@@ -441,7 +446,10 @@ function createFriendlyFireTableColumns(): DataTableColumns<FriendlyFireTableRow
   ];
 }
 
-function generateFriendlyFireTableData(data: Record<string, PlayerDamageInfo>) {
+function generateFriendlyFireTableData(
+  data: Record<string, PlayerDamageInfo>,
+): FriendlyFireTableRow[] {
+  let result = [];
   for (const [playerName, playerData] of Object.entries(data)) {
     let totalTake = 0.0;
     let totalCause = 0.0;
@@ -460,7 +468,7 @@ function generateFriendlyFireTableData(data: Record<string, PlayerDamageInfo>) {
       totalCause += damage;
     }
 
-    friendlyFireTableData.value.push({
+    result.push({
       playerName,
       take: totalTake,
       cause: totalCause,
@@ -468,11 +476,17 @@ function generateFriendlyFireTableData(data: Record<string, PlayerDamageInfo>) {
       friendlyFireRate: totalCause / (totalCause + totalDamage),
     });
   }
+
+  return result;
 }
 
-function generateWeaponTableData(weaponDamageInfoData: Record<string, WeaponDamageInfo>) {
+function generateWeaponTableData(
+  weaponDamageInfoData: Record<string, WeaponDamageInfo>,
+): WeaponTableRow[] {
+  let result = [];
+
   for (const [weaponName, weaponData] of Object.entries(weaponDamageInfoData)) {
-    weaponInfoTableData.value.push({
+    result.push({
       weaponName,
       damage: weaponData.damage,
       friendlyFire: weaponData.friendlyFire,
@@ -480,6 +494,8 @@ function generateWeaponTableData(weaponDamageInfoData: Record<string, WeaponDama
       heroGameId: weaponData.heroGameId,
     });
   }
+
+  return result;
 }
 
 const createDamageTableSummary: DataTableCreateSummary = (pageData) => {
@@ -607,9 +623,11 @@ function createEnemyTableColumns(): DataTableColumns<EnemyTableRow> {
   ];
 }
 
-function generateEnemyTableData(playerDamageInfoData: Record<string, PlayerDamageInfo>) {
+function generateEnemyTableData(
+  playerDamageInfoData: Record<string, PlayerDamageInfo>,
+): EnemyTableRow[] {
   let enemyMap: Record<string, EnemyTableRow> = {};
-
+  let result = [];
   for (const playerData of Object.values(playerDamageInfoData)) {
     for (const [enemyName, killCount] of Object.entries(playerData.kill)) {
       if (enemyMap[enemyName] == undefined) {
@@ -637,8 +655,10 @@ function generateEnemyTableData(playerDamageInfoData: Record<string, PlayerDamag
   }
 
   for (const enemyData of Object.values(enemyMap)) {
-    enemyTableData.value.push(enemyData);
+    result.push(enemyData);
   }
+
+  return result;
 }
 
 function createEnemyPlot(
@@ -746,51 +766,57 @@ const props = defineProps<{ missionId?: number }>();
 
 const message = useMessage();
 
-fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic`)
-  .then((res) => res.json())
-  .then((data: Response<PlayerBasicInfo>) => {
-    if (data.code !== 200) {
-      message.error(`API Error: ${data.code} ${data.message}`);
-    }
-    playerBasicInfoData.value = data.data;
-  })
-  .catch((e) => {
-    message.error(`HTTP Error: ${e}`);
-  });
+watch(
+  () => props.missionId,
+  () => {
+    fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/basic`)
+      .then((res) => res.json())
+      .then((data: Response<PlayerBasicInfo>) => {
+        if (data.code !== 200) {
+          message.error(`API Error: ${data.code} ${data.message}`);
+        }
+        playerBasicInfoData.value = data.data;
+      })
+      .catch((e) => {
+        message.error(`HTTP Error: ${e}`);
+      });
 
-fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/damage`)
-  .then((res) => res.json())
-  .then((data: PlayerDamageInfoResponse) => {
-    if (data.code !== 200) {
-      message.error(`API Error: ${data.code} ${data.message}`);
-    }
-    playerDamageInfoData.value = data.data.info;
-    generateDamageInfoTableData(data.data.info);
-    createDamagePlot(data.data.info);
+    fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/damage`)
+      .then((res) => res.json())
+      .then((data: PlayerDamageInfoResponse) => {
+        if (data.code !== 200) {
+          message.error(`API Error: ${data.code} ${data.message}`);
+        }
+        playerDamageInfoData.value = data.data.info;
+        damgeInfoTableData.value = generateDamageInfoTableData(data.data.info);
+        createDamagePlot(data.data.info);
 
-    generateFriendlyFireTableData(data.data.info);
-    createFriendlyFirePlot(data.data.info);
+        friendlyFireTableData.value = generateFriendlyFireTableData(data.data.info);
+        createFriendlyFirePlot(data.data.info);
 
-    generateEnemyTableData(data.data.info);
-    createEnemyPlot(data.data.info, data.data.entityMapping);
-  })
-  .catch((e) => {
-    message.error(`HTTP Error: ${e}`);
-  });
+        enemyTableData.value = generateEnemyTableData(data.data.info);
+        createEnemyPlot(data.data.info, data.data.entityMapping);
+      })
+      .catch((e) => {
+        message.error(`HTTP Error: ${e}`);
+      });
 
-fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/weapon`)
-  .then((res) => res.json())
-  .then((data: WeaponDamageInfoResponse) => {
-    if (data.code !== 200) {
-      message.error(`API Error: ${data.code} ${data.message}`);
-    } else {
-      generateWeaponTableData(data.data);
-      createWeaponPlot(data.data);
-    }
-  })
-  .catch((e) => {
-    message.error(`HTTP Error: ${e}`);
-  });
+    fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/weapon`)
+      .then((res) => res.json())
+      .then((data: WeaponDamageInfoResponse) => {
+        if (data.code !== 200) {
+          message.error(`API Error: ${data.code} ${data.message}`);
+        } else {
+          weaponInfoTableData.value = generateWeaponTableData(data.data);
+          createWeaponPlot(data.data);
+        }
+      })
+      .catch((e) => {
+        message.error(`HTTP Error: ${e}`);
+      });
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
