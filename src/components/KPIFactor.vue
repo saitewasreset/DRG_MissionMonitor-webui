@@ -231,7 +231,11 @@ function createGammaTableColumns(): DataTableColumns<GammaRow> {
       key: "characterGameId",
       align: "center",
       render(row) {
-        return translate(row.characterGameId).value;
+        return h(
+          "span",
+          { class: generateCharacterClass(row.characterGameId) },
+          translate(row.characterGameId).value,
+        );
       },
     },
     {
@@ -284,6 +288,7 @@ import { ref, h } from "vue";
 import { NGrid, NGi, NFlex, NCard, NDataTable, useMessage, type DataTableColumns } from "naive-ui";
 
 import { translate } from "@/mapping";
+import { generateCharacterClass } from "@/formatter";
 
 const message = useMessage();
 

@@ -32,6 +32,12 @@ export interface CharacterDamageInfo {
   mappedName: string;
 }
 
+export interface EntityData {
+  damage: Record<string, number>;
+  kill: Record<string, number>;
+  entityMapping: Record<string, string>;
+}
+
 export interface ResponseData<T> {
   code: number;
   message: string;

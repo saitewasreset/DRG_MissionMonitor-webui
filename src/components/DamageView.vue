@@ -6,6 +6,7 @@ import type {
   OverallDamageInfo,
   WeaponDamageInfo,
   CharacterDamageInfo,
+  EntityData,
   ResponseData,
 } from "./DamageViewTypes";
 
@@ -16,6 +17,7 @@ const message = useMessage();
 const overallDamageInfo = ref<OverallDamageInfo>();
 const weaponDamageInfo = ref<Record<string, WeaponDamageInfo>>();
 const characterDamageInfo = ref<Record<string, CharacterDamageInfo>>();
+const entityData = ref<EntityData>();
 
 fetch("./api/damage")
   .then((res) => res.json())
@@ -55,6 +57,18 @@ fetch("./api/damage/character")
   .catch((err) => {
     message.error(`HTTP Error while getting character damage info: ${err}`);
   });
+fetch("./api/damage/entity")
+  .then((res) => res.json())
+  .then((data: ResponseData<EntityData>) => {
+    if (data.code !== 200) {
+      message.error(`API Error while getting character damage info: ${data.code} ${data.message}`);
+    } else {
+      entityData.value = data.data;
+    }
+  })
+  .catch((err) => {
+    message.error(`HTTP Error while getting character damage info: ${err}`);
+  });
 </script>
 <template>
   <n-card>
@@ -64,6 +78,7 @@ fetch("./api/damage/character")
           :overallDamageInfo="overallDamageInfo"
           :weaponDamageInfo="weaponDamageInfo"
           :characterDamageInfo="characterDamageInfo"
+          :entity-data="entityData"
         ></DamageDamage>
       </n-tab-pane>
       <n-tab-pane name="friendly-fire" tab="友伤" display-directive="show">

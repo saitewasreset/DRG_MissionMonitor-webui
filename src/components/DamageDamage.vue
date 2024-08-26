@@ -2,7 +2,12 @@
 import { ref, watch, h } from "vue";
 import { NDataTable, NCard, type DataTableColumns, type DataTableCreateSummary } from "naive-ui";
 import Plotly, { type Data } from "plotly.js-basic-dist";
-import type { OverallDamageInfo, WeaponDamageInfo, CharacterDamageInfo } from "./DamageViewTypes";
+import type {
+  OverallDamageInfo,
+  WeaponDamageInfo,
+  CharacterDamageInfo,
+  EntityData,
+} from "./DamageViewTypes";
 
 import { nFormatter, generateCharacterClass } from "@/formatter";
 import { translate } from "@/mapping";
@@ -47,6 +52,7 @@ const props = defineProps<{
   overallDamageInfo?: OverallDamageInfo;
   weaponDamageInfo?: Record<string, WeaponDamageInfo>;
   characterDamageInfo?: Record<string, CharacterDamageInfo>;
+  entityData?: EntityData;
 }>();
 
 const overallTableData = ref<OverallTableRow[]>([]);
@@ -641,44 +647,23 @@ function createEnemyTableColumns(): DataTableColumns<EnemyTableRow> {
 }
 
 function generateEnemyTableData(): EnemyTableRow[] {
-  if (props.overallDamageInfo === undefined) {
+  if (props.entityData === undefined) {
     return [];
   }
 
   let result = [];
 
-  let enemyDamageMap: Record<string, number> = {};
-  let enemyKillMap: Record<string, number> = {};
+  let enemyDamageMap: Record<string, number> = props.entityData.damage;
+  let enemyKillMap: Record<string, number> = props.entityData.kill;
 
-  for (const playerDamageInfo of Object.values(props.overallDamageInfo.info)) {
-    for (const [enemyGameId, enemyDamage] of Object.entries(playerDamageInfo.damage)) {
-      let mappedEnemyName =
-        props.overallDamageInfo.entityMapping[enemyGameId] === undefined
-          ? enemyGameId
-          : props.overallDamageInfo.entityMapping[enemyGameId];
-      if (enemyDamageMap[mappedEnemyName] === undefined) {
-        enemyDamageMap[mappedEnemyName] = 0.0;
-      }
-      enemyDamageMap[mappedEnemyName] += enemyDamage;
-    }
-
-    for (const [enemyGameId, enemyKill] of Object.entries(playerDamageInfo.kill)) {
-      let mappedEnemyName =
-        props.overallDamageInfo.entityMapping[enemyGameId] === undefined
-          ? enemyGameId
-          : props.overallDamageInfo.entityMapping[enemyGameId];
-      if (enemyKillMap[mappedEnemyName] === undefined) {
-        enemyKillMap[mappedEnemyName] = 0;
-      }
-      enemyKillMap[mappedEnemyName] += enemyKill;
-    }
-  }
-
-  for (const [mappedEnemyName, totalKill] of Object.entries(enemyKillMap)) {
+  for (const [entityGameId, totalKill] of Object.entries(enemyKillMap)) {
     result.push({
-      mappedEnemyName,
+      mappedEnemyName:
+        props.entityData.entityMapping[entityGameId] === undefined
+          ? entityGameId
+          : props.entityData.entityMapping[entityGameId],
       totalKill: totalKill,
-      totalDamage: enemyDamageMap[mappedEnemyName],
+      totalDamage: enemyDamageMap[entityGameId],
     });
   }
 
@@ -695,44 +680,23 @@ function createEnemyPlot() {
     },
   };
 
-  if (props.overallDamageInfo === undefined) {
+  if (props.entityData === undefined) {
     return;
   }
 
-  let enemyDamageMap: Record<string, number> = {};
-  let enemyKillMap: Record<string, number> = {};
-
-  for (const playerDamageInfo of Object.values(props.overallDamageInfo.info)) {
-    for (const [enemyGameId, enemyKill] of Object.entries(playerDamageInfo.kill)) {
-      let mappedEnemyName =
-        props.overallDamageInfo.entityMapping[enemyGameId] === undefined
-          ? enemyGameId
-          : props.overallDamageInfo.entityMapping[enemyGameId];
-      if (enemyKillMap[mappedEnemyName] === undefined) {
-        enemyKillMap[mappedEnemyName] = 0;
-      }
-      enemyKillMap[mappedEnemyName] += enemyKill;
-    }
-
-    for (const [enemyGameId, enemyDamage] of Object.entries(playerDamageInfo.damage)) {
-      let mappedEnemyName =
-        props.overallDamageInfo.entityMapping[enemyGameId] === undefined
-          ? enemyGameId
-          : props.overallDamageInfo.entityMapping[enemyGameId];
-      if (enemyDamageMap[mappedEnemyName] === undefined) {
-        enemyDamageMap[mappedEnemyName] = 0.0;
-      }
-      enemyDamageMap[mappedEnemyName] += enemyDamage;
-    }
-  }
+  let enemyDamageMap: Record<string, number> = props.entityData.damage;
+  let enemyKillMap: Record<string, number> = props.entityData.kill;
 
   let enemyDataList = [];
 
-  for (const [mappedEnemyName, totalKill] of Object.entries(enemyKillMap)) {
+  for (const [entityGameId, totalKill] of Object.entries(enemyKillMap)) {
     enemyDataList.push({
-      mappedName: mappedEnemyName,
+      mappedName:
+        props.entityData.entityMapping[entityGameId] === undefined
+          ? entityGameId
+          : props.entityData.entityMapping[entityGameId],
       totalKill,
-      totalDamage: enemyDamageMap[mappedEnemyName],
+      totalDamage: enemyDamageMap[entityGameId],
     });
   }
 
@@ -791,9 +755,6 @@ watch(
   () => {
     overallTableData.value = generateOverallTableData();
     createDamagePlot();
-
-    enemyTableData.value = generateEnemyTableData();
-    createEnemyPlot();
   },
 );
 
@@ -810,6 +771,14 @@ watch(
   () => {
     characterTableData.value = generateCharacterTableData();
     createCharacterPlot();
+  },
+);
+
+watch(
+  () => props.entityData,
+  () => {
+    enemyTableData.value = generateEnemyTableData();
+    createEnemyPlot();
   },
 );
 </script>
