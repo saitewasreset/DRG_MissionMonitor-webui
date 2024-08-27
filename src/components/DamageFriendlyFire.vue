@@ -501,6 +501,7 @@ watch(
         :columns="createFriendlyFireTableColumns()"
         :data="friendlyFireTableData"
         :pagination="false"
+        :row-key="(row: FriendlyFireTableRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
     </div>
@@ -522,6 +523,7 @@ watch(
             :columns="createTakeTableColumns()"
             :data="takeTableData"
             :pagination="false"
+            :row-key="(row: PlayerTakeRow) => row.causePlayerName"
             style="width: fit-content"
           ></n-data-table>
           <div id="take-plot"></div>
@@ -533,6 +535,7 @@ watch(
             :columns="createCauseTableColumns()"
             :data="causeTableData"
             :pagination="false"
+            :row-key="(row: PlayerCauseRow) => row.takePlayerName"
             style="width: fit-content"
           ></n-data-table>
           <div id="cause-plot"></div>

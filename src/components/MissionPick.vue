@@ -424,6 +424,7 @@ watch(
         :columns="createNitraTableColumns()"
         :data="nitraTableData"
         :pagination="false"
+        :row-key="(row: NitraDataRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
       <div id="nitra-plot-container"></div>
@@ -435,6 +436,7 @@ watch(
         :columns="createResourceTableColumns()"
         :data="resourceTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: ResourceDataRow) => row.resourceName"
         style="width: fit-content"
       ></n-data-table>
       <div id="resource-plot-container"></div>
@@ -446,6 +448,7 @@ watch(
         :columns="createPlayerResourceTableColumn()"
         :data="playerResourceTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: PlayerResourceDataRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
       <div id="player-resource-plot-container"></div>

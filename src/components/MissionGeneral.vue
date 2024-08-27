@@ -240,6 +240,7 @@ watch(
           :data="tableData"
           :pagination="false"
           :bordered="true"
+          :row-key="(row: MissionGeneralTableRowData) => row.heroGameId"
           style="width: fit-content"
         ></n-data-table>
       </div>

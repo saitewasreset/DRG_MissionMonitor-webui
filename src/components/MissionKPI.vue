@@ -321,6 +321,7 @@ watch(
       :columns="createKPITableColumns()"
       :data="kpiTableData"
       :pagination="false"
+      :row-key="(row: KPIDataTableRow) => row.playerName + row.subtypeName"
       style="width: fit-content"
     ></n-data-table>
   </div>

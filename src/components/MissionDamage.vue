@@ -827,6 +827,7 @@ watch(
         :data="damgeInfoTableData"
         :pagination="false"
         :summary="createDamageTableSummary"
+        :row-key="(row: DamageTableRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
       <div id="damage-plot-container"></div>
@@ -838,6 +839,7 @@ watch(
         :columns="createFriendlyFireTableColumns()"
         :data="friendlyFireTableData"
         :pagination="false"
+        :row-key="(row: FriendlyFireTableRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
       <div id="friendlyfire-plot-container"></div>
@@ -849,6 +851,7 @@ watch(
         :columns="createWeaponTableColumns()"
         :data="weaponInfoTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: WeaponTableRow) => row.weaponName"
         style="width: fit-content"
       ></n-data-table>
       <div id="weapon-plot-container"></div>
@@ -860,6 +863,7 @@ watch(
         :columns="createEnemyTableColumns()"
         :data="enemyTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: EnemyTableRow) => row.enemyName"
         style="width: fit-content"
       ></n-data-table>
       <div id="enemy-plot-container"></div>

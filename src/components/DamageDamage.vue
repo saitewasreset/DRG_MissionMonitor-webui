@@ -790,6 +790,7 @@ watch(
         :data="overallTableData"
         :pagination="false"
         :summary="createOverallTableSummary"
+        :row-key="(row: OverallTableRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
       <div id="overall-plot-container"></div></div
@@ -800,6 +801,7 @@ watch(
         :columns="createWeaponTableColumns()"
         :data="weaponTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: WeaponTableRow) => row.weaponName"
         style="width: fit-content"
       ></n-data-table>
       <div id="weapon-plot-container"></div>
@@ -811,6 +813,7 @@ watch(
         :columns="createCharacterTableColumns()"
         :data="characterTableData"
         :pagination="false"
+        :row-key="(row: CharacterTableRow) => row.characterGameId"
         style="width: fit-content"
       ></n-data-table>
       <div id="character-plot-container"></div>
@@ -822,6 +825,7 @@ watch(
         :columns="createEnemyTableColumns()"
         :data="enemyTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: EnemyTableRow) => row.mappedEnemyName"
         style="width: fit-content"
       ></n-data-table>
       <div id="enemy-plot-container"></div>

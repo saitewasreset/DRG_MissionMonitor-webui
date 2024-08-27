@@ -348,6 +348,7 @@ fetch("./api/kpi/gamma")
         :columns="createWeightTableDataColumns()"
         :data="weightTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: WeightTableData) => row.entityGameId"
         style="width: fit-content"
       ></n-data-table>
     </n-flex>
@@ -360,6 +361,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'kill')"
             :pagination="false"
+            :row-key="(row: GammaRow) => row.characterGameId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -370,6 +372,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'damage')"
             :pagination="false"
+            :row-key="(row: GammaRow) => row.characterGameId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -380,6 +383,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'nitra')"
             :pagination="false"
+            :row-key="(row: GammaRow) => row.characterGameId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -390,6 +394,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'minerals')"
             :pagination="false"
+            :row-key="(row: GammaRow) => row.characterGameId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -404,6 +409,7 @@ fetch("./api/kpi/gamma")
             :columns="createKPIFactorTableColumns()"
             :data="factorTableData[0]"
             :pagination="false"
+            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -414,6 +420,7 @@ fetch("./api/kpi/gamma")
             :columns="createKPIFactorTableColumns()"
             :data="factorTableData[1]"
             :pagination="false"
+            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -424,6 +431,7 @@ fetch("./api/kpi/gamma")
             :columns="createKPIFactorTableColumns()"
             :data="factorTableData[2]"
             :pagination="false"
+            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -434,6 +442,7 @@ fetch("./api/kpi/gamma")
             :columns="createKPIFactorTableColumns()"
             :data="factorTableData[3]"
             :pagination="false"
+            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -444,6 +453,7 @@ fetch("./api/kpi/gamma")
             :columns="createKPIFactorTableColumns()"
             :data="factorTableData[4]"
             :pagination="false"
+            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
             style="width: fit-content"
           ></n-data-table>
         </n-card>

@@ -209,6 +209,7 @@ fetch(`./api/mission/mission_list`)
         :row-class-name="
           (rowData) => (rowData.missionId === lastSelectedMissionId ? 'selected-row' : '')
         "
+        :row-key="(row: MissionInfo) => row.missionId"
         style="width: fit-content"
       ></n-data-table>
     </div>

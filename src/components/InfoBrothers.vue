@@ -145,6 +145,7 @@ fetch("./api/info/brothers")
         :columns="createBrothersTableColumns()"
         :data="brothersTableData"
         :pagination="{ pageSize: 10 }"
+        :row-key="(row: BrothersTableRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
     </n-flex>

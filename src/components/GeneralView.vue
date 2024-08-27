@@ -802,6 +802,7 @@ watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
         :columns="createMissionTypeTableColumns()"
         :data="missionTypeTableData"
         :pagination="false"
+        :row-key="(row: MissionTypeInfoTableRow) => row.missionType"
         style="width: fit-content"
       >
       </n-data-table>
@@ -814,6 +815,7 @@ watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
         :columns="createCharacterInfoTableColumns()"
         :data="characterInfoTableData"
         :pagination="false"
+        :row-key="(row: CharacterInfoTableRow) => row.characterGameId"
         style="width: fit-content"
       ></n-data-table>
       <div id="character-info-plot"></div></div
@@ -824,6 +826,7 @@ watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
         :columns="createPlayerInfoTableColumns()"
         :data="playerInfoTableData"
         :pagination="false"
+        :row-key="(row) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
       <div id="player-info-plot"></div>

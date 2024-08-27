@@ -261,6 +261,7 @@ fetch("./api/kpi/player_kpi")
         :columns="createOverallKPIInfoTableColumns()"
         :data="overallKPIInfoTableData"
         :pagination="false"
+        :row-key="(row: OverallKPIInfoRow) => row.playerName"
         style="width: fit-content"
       ></n-data-table>
     </n-flex>
@@ -277,6 +278,7 @@ fetch("./api/kpi/player_kpi")
         :data="playerKPIInfoTableData[playerSelected]"
         :pagination="{ pageSize: 10 }"
         :row-props="playerKPIInfoTableRowProps"
+        :row-key="(row: PlayerKPIInfoRow) => row.missionId"
         style="width: fit-content"
       ></n-data-table>
     </n-flex>
