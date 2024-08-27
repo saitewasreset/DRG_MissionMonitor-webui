@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { useMessage, NDataTable, NCard, NFlex, NSelect, type DataTableColumns } from "naive-ui";
+import {
+  useMessage,
+  NDataTable,
+  NCard,
+  NFlex,
+  NSelect,
+  NModal,
+  type DataTableColumns,
+} from "naive-ui";
 import { ref, h } from "vue";
 import { translate } from "@/mapping";
 import { generateCharacterClass, formatMissionDate } from "@/formatter";
 import { characterFilterOptions } from "@/tool";
 
-import { useRouter } from "vue-router";
+import MissionDetails from "./MissionDetails.vue";
 
 import type { Response } from "@/type";
 
@@ -210,7 +218,8 @@ function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
 }
 
 const message = useMessage();
-const router = useRouter();
+const showModal = ref(false);
+const showMissionId = ref(1);
 
 const playerKPIData = ref<PlayerKPIInfo>({});
 const overallKPIInfoTableData = ref<OverallKPIInfoRow[]>([]);
@@ -222,7 +231,8 @@ const playerKPIInfoTableRowProps = (row: PlayerKPIInfoRow) => {
   return {
     style: "cursor: pointer;",
     onClick: () => {
-      router.push({ name: "missionDetails", params: { id: row.missionId } });
+      showMissionId.value = row.missionId;
+      showModal.value = true;
     },
   };
 };
@@ -271,4 +281,19 @@ fetch("./api/kpi/player_kpi")
       ></n-data-table>
     </n-flex>
   </n-card>
+  <n-modal v-model:show="showModal">
+    <n-card
+      style="width: 80%"
+      display-directive="show"
+      title="任务信息"
+      :bordered="false"
+      size="huge"
+      role="card"
+      aria-modal="true"
+      closable
+      :on-close="() => (showModal = false)"
+    >
+      <MissionDetails :mission-id="showMissionId" style="width: 600px"></MissionDetails>
+    </n-card>
+  </n-modal>
 </template>

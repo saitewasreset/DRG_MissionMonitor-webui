@@ -25,6 +25,10 @@ const route = useRoute();
 const router = useRouter();
 const message = useMessage();
 
+const props = defineProps<{
+  missionId?: number;
+}>();
+
 interface MissionGeneralInfo {
   missionId: number;
   missionBeginTimestamp: number;
@@ -42,7 +46,13 @@ const missionGeneralData = ref<MissionGeneralInfo>({
 watch(
   () => route.params.id,
   () => {
-    const missionId = Number(route.params.id);
+    let missionId: number;
+    if (props.missionId === undefined) {
+      missionId = Number(route.params.id);
+    } else {
+      missionId = props.missionId;
+    }
+
     if (isNaN(missionId)) {
       router.push({ name: "notFound" });
     } else {
@@ -70,7 +80,12 @@ watch(
 
 <template>
   <n-h2 style="padding: 10px; margin: 0px">
-    <n-button text style="font-size: 24px" @click="$router.push({ name: 'mission' })">
+    <n-button
+      v-if="!props.missionId"
+      text
+      style="font-size: 24px"
+      @click="$router.push({ name: 'mission' })"
+    >
       <template #icon>
         <n-icon><ArrowLeft /></n-icon>
       </template>
