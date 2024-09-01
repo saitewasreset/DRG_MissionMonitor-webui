@@ -42,7 +42,7 @@ watch(currentSelectComponentKey, (value) => {
 
 <template>
   <n-space vertical size="large">
-    <n-layout position="absolute">
+    <n-layout position="absolute" style="min-width: 1400px">
       <n-layout-header bordered style="height: 64px">
         <div class="title">
           <n-icon size="1.2rem">
