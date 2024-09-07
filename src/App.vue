@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { NConfigProvider, zhCN, dateZhCN } from 'naive-ui';
+import { ref, watch, computed } from "vue";
+import { NConfigProvider, zhCN, dateZhCN, darkTheme, lightTheme, useOsTheme } from 'naive-ui';
 import {
   NAlert,
   NIcon,
@@ -12,9 +12,10 @@ import {
   NSpace,
   NFlex,
   NButton,
+  NSwitch,
 } from "naive-ui";
 import { mappingError } from "./mapping";
-import { TaskAssetView, FavoriteFilled, LogoGithub } from "@vicons/carbon";
+import { TaskAssetView, FavoriteFilled, LogoGithub, Sun, Moon } from "@vicons/carbon";
 import NavBar from "./components/NavBar.vue";
 
 import { RouterView, useRoute, useRouter } from "vue-router";
@@ -39,10 +40,28 @@ watch(currentSelectComponentKey, (value) => {
     router.push({ name: value });
   }
 });
+
+// get os theme
+const osTheme = useOsTheme();
+const userTheme = ref<null | 'light' | 'dark'>(null);
+
+const theme = computed(() => {
+  return userTheme.value ? (userTheme.value === 'dark' ? darkTheme : lightTheme)
+                         : (osTheme.value === 'dark' ? darkTheme : lightTheme);
+});
+
+const toggleTheme = () => {
+  userTheme.value = theme.value === darkTheme ? 'light' : 'dark';
+};
+
+const clearUserTheme = () => {
+  userTheme.value = null;
+};
+
 </script>
 
 <template>
-  <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
+  <n-config-provider :locale="zhCN" :date-locale="dateZhCN" :theme="theme">
     <n-space vertical size="large">
       <n-layout position="absolute" style="min-width: 1400px">
         <n-layout-header bordered style="height: 64px">
@@ -56,7 +75,23 @@ watch(currentSelectComponentKey, (value) => {
             无法加载Mapping：{{ mappingError }}
           </n-alert>
           <div></div>
-          <div></div>
+          <div class="theme-switch">
+            <n-tooltip trigger="hover" placement="bottom">
+              <template #trigger>
+                <n-switch @update:value="toggleTheme">
+                  <template #checked>
+                    <n-icon><Moon /></n-icon>
+                  </template>
+                  <template #unchecked>
+                    <n-icon><Sun /></n-icon>
+                  </template>
+                </n-switch>
+              </template>
+              <template #default>
+                <n-button text @click="clearUserTheme">跟随系统</n-button>
+              </template>
+            </n-tooltip>
+          </div>
         </n-layout-header>
         <n-layout has-sider position="absolute" style="top: 64px; bottom: 64px">
           <n-layout-sider
@@ -79,7 +114,6 @@ watch(currentSelectComponentKey, (value) => {
               made by <span class="admin">saitewasreset</span> with
               <n-icon color="red" size="8"><FavoriteFilled /></n-icon>
               &ensp;
-
               <n-button
                 text
                 tag="a"
@@ -112,5 +146,12 @@ watch(currentSelectComponentKey, (value) => {
   text-align: center;
   margin: auto;
   font-size: 0.8rem;
+}
+
+.theme-switch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 20px;
 }
 </style>
