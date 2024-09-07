@@ -13,7 +13,7 @@ import {
   NSpace,
   NFlex,
   NButton,
-  NSwitch,
+  NCheckbox,
 } from "naive-ui";
 import { mappingError } from "./mapping";
 import { TaskAssetView, FavoriteFilled, LogoGithub, Sun, Moon } from "@vicons/carbon";
@@ -45,24 +45,23 @@ watch(currentSelectComponentKey, (value) => {
 // get os theme
 const osTheme = useOsTheme();
 const userTheme = ref<null | "light" | "dark">(null);
+const followSystemTheme = ref(true);
 
 const theme = computed(() => {
-  return userTheme.value
-    ? userTheme.value === "dark"
+  return followSystemTheme.value
+    ? osTheme.value === "dark"
       ? darkTheme
       : lightTheme
-    : osTheme.value === "dark"
+    : userTheme.value === "dark"
       ? darkTheme
-      : lightTheme;
+      : lightTheme
 });
 
 const toggleTheme = () => {
+  followSystemTheme.value = false;
   userTheme.value = theme.value === darkTheme ? "light" : "dark";
 };
 
-const clearUserTheme = () => {
-  userTheme.value = null;
-};
 </script>
 
 <template>
@@ -88,17 +87,21 @@ const clearUserTheme = () => {
           <div class="theme-switch">
             <n-tooltip trigger="hover" placement="bottom">
               <template #trigger>
-                <n-switch @update:value="toggleTheme">
-                  <template #checked>
-                    <n-icon><Moon /></n-icon>
-                  </template>
-                  <template #unchecked>
-                    <n-icon><Sun /></n-icon>
-                  </template>
-                </n-switch>
+                <n-checkbox v-model="followSystemTheme">
+                  跟随系统
+                </n-checkbox>
               </template>
               <template #default>
-                <n-button text @click="clearUserTheme">跟随系统</n-button>
+                <n-button text @click="toggleTheme">
+                  <n-icon>
+                    <template v-if="theme === darkTheme">
+                      <Moon />
+                    </template>
+                    <template v-else>
+                      <Sun />
+                    </template>
+                  </n-icon>
+                </n-button>
               </template>
             </n-tooltip>
           </div>
