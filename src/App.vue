@@ -69,7 +69,7 @@ const clearUserTheme = () => {
             <n-icon size="1.2rem">
               <TaskAssetView />
             </n-icon>
-            Mission Monitor WebUI
+            Mission Monitor
           </div>
           <n-alert class="alert-box" v-if="mappingError != null" type="error">
             无法加载Mapping：{{ mappingError }}
