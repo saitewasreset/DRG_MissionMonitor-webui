@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
-import { NConfigProvider, zhCN, dateZhCN, darkTheme, lightTheme, useOsTheme } from 'naive-ui';
+import { NConfigProvider, zhCN, dateZhCN, darkTheme, lightTheme, useOsTheme } from "naive-ui";
 import {
   NAlert,
   NIcon,
@@ -9,6 +9,7 @@ import {
   NLayoutSider,
   NLayoutContent,
   NLayoutFooter,
+  NTooltip,
   NSpace,
   NFlex,
   NButton,
@@ -43,21 +44,25 @@ watch(currentSelectComponentKey, (value) => {
 
 // get os theme
 const osTheme = useOsTheme();
-const userTheme = ref<null | 'light' | 'dark'>(null);
+const userTheme = ref<null | "light" | "dark">(null);
 
 const theme = computed(() => {
-  return userTheme.value ? (userTheme.value === 'dark' ? darkTheme : lightTheme)
-                         : (osTheme.value === 'dark' ? darkTheme : lightTheme);
+  return userTheme.value
+    ? userTheme.value === "dark"
+      ? darkTheme
+      : lightTheme
+    : osTheme.value === "dark"
+      ? darkTheme
+      : lightTheme;
 });
 
 const toggleTheme = () => {
-  userTheme.value = theme.value === darkTheme ? 'light' : 'dark';
+  userTheme.value = theme.value === darkTheme ? "light" : "dark";
 };
 
 const clearUserTheme = () => {
   userTheme.value = null;
 };
-
 </script>
 
 <template>
@@ -66,14 +71,19 @@ const clearUserTheme = () => {
       <n-layout position="absolute" style="min-width: 1400px">
         <n-layout-header bordered style="height: 64px">
           <div class="title">
-            <n-icon size="1.2rem">
-              <TaskAssetView />
-            </n-icon>
-            Mission Monitor
+            <div>
+              <n-icon size="1.2rem">
+                <TaskAssetView />
+              </n-icon>
+              Mission Monitor
+            </div>
           </div>
-          <n-alert class="alert-box" v-if="mappingError != null" type="error">
-            无法加载Mapping：{{ mappingError }}
-          </n-alert>
+          <div>
+            <n-alert class="alert-box" v-if="mappingError != null" type="error">
+              无法加载Mapping：{{ mappingError }}
+            </n-alert>
+          </div>
+          <div></div>
           <div></div>
           <div class="theme-switch">
             <n-tooltip trigger="hover" placement="bottom">
@@ -132,12 +142,14 @@ const clearUserTheme = () => {
 <style scoped>
 .n-layout-header {
   display: grid;
-  grid-template-columns: 2fr 5fr 5fr 5fr;
+  grid-template-columns: 2fr 5fr 5fr 5fr 1fr;
   max-height: 10%;
 }
 
 .title {
   font-size: 1.2rem;
+  display: flex;
+  align-items: center;
   text-align: center;
   max-width: 200px;
 }
