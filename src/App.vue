@@ -13,6 +13,7 @@ import {
   NFlex,
   NButton,
   NSwitch,
+  NTooltip,
 } from "naive-ui";
 import { mappingError } from "./mapping";
 import { TaskAssetView, FavoriteFilled, LogoGithub, Sun, Moon } from "@vicons/carbon";
