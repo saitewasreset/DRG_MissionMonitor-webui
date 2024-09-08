@@ -46,6 +46,7 @@ watch(currentSelectComponentKey, (value) => {
 const osTheme = useOsTheme();
 const userTheme = ref<null | "light" | "dark">(null);
 const followSystemTheme = ref(true);
+const showCheckbox = ref(false);
 
 const theme = computed(() => {
   return followSystemTheme.value
@@ -61,6 +62,7 @@ const toggleTheme = () => {
   followSystemTheme.value = false;
   userTheme.value = theme.value === darkTheme ? "light" : "dark";
 };
+
 </script>
 
 <template>
@@ -84,23 +86,32 @@ const toggleTheme = () => {
           <div></div>
           <div></div>
           <div class="theme-switch">
-            <n-tooltip trigger="hover" placement="bottom">
-              <template #trigger>
-                <n-checkbox v-model:checked="followSystemTheme"> 跟随系统 </n-checkbox>
-              </template>
-              <template #default>
-                <n-button text @click="toggleTheme" :disabled="followSystemTheme">
-                  <n-icon>
-                    <template v-if="theme === darkTheme">
+            <div
+              @mouseenter="showCheckbox = true"
+              @mouseleave="showCheckbox = false"
+              class="theme-button-wrapper"
+            >
+              <n-checkbox
+                v-if="showCheckbox"
+                v-model:checked="followSystemTheme"
+                class="follow-system-checkbox"
+              >
+                跟随系统
+              </n-checkbox>
+              <n-tooltip trigger="hover" placement="bottom">
+                <template #trigger>
+                  <n-button text @click="toggleTheme" :disabled="followSystemTheme">
+                    <n-icon v-if="theme === darkTheme">
                       <Moon />
-                    </template>
-                    <template v-else>
+                    </n-icon>
+                    <n-icon v-else>
                       <Sun />
-                    </template>
-                  </n-icon>
-                </n-button>
-              </template>
-            </n-tooltip>
+                    </n-icon>
+                  </n-button>
+                </template>
+                <span>{{ followSystemTheme ? '取消跟随系统主题以手动切换' : '点击切换主题' }}</span>
+              </n-tooltip>
+            </div>
           </div>
         </n-layout-header>
         <n-layout has-sider position="absolute" style="top: 64px; bottom: 64px">
