@@ -25,6 +25,7 @@ interface BrotherInfo {
   count: number;
   presenceTime: number;
   lastSpot: number;
+  spotCount: number;
   timestampList: number[];
 }
 
@@ -36,6 +37,7 @@ interface BrothersData {
 interface BrothersTableRow {
   playerName: string;
   count: number;
+  spotCount: number;
   presenceTime: number;
   lastSpot: number;
 }
@@ -51,6 +53,17 @@ function createBrothersTableColumns(): DataTableColumns<BrothersTableRow> {
       title: "游戏局数",
       key: "count",
       align: "center",
+      sorter(a, b) {
+        return a.count - b.count;
+      },
+    },
+    {
+      title: "再相遇次数",
+      key: "spotCount",
+      align: "center",
+      sorter(a, b) {
+        return a.spotCount - b.spotCount;
+      },
     },
     {
       title: "总计相遇时间",
@@ -84,6 +97,7 @@ function generateBrothersTableData(playerData: Record<string, BrotherInfo>): Bro
     result.push({
       playerName,
       count: data.count,
+      spotCount: data.spotCount,
       presenceTime: data.presenceTime,
       lastSpot: data.lastSpot,
     });
