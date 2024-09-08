@@ -121,7 +121,13 @@ const toggleTheme = () => {
           <n-flex align="center" vertical>
             <p class="footer-p">同舟共济，绝不放弃！</p>
             <p class="footer-p">
-              made by <span class="admin">saitewasreset</span> with
+              made by
+              <a href="https://github.com/saitewasreset" target="_blank" class="author admin"
+                >saitewasreset</a
+              >
+              &
+              <a href="https://github.com/DeepChirp" target="_blank" class="author gunner">深鸣</a>
+              with
               <n-icon color="red" size="8"><FavoriteFilled /></n-icon>
               &ensp;
               <n-button
@@ -165,5 +171,9 @@ const toggleTheme = () => {
   align-items: center;
   justify-content: flex-end;
   padding-right: 20px;
+}
+
+a.author {
+  text-decoration: none;
 }
 </style>
