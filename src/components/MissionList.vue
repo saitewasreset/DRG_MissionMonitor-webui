@@ -48,11 +48,13 @@ function renderMissionResultIcon(missionResult: number) {
 }
 
 function createMissionListColumns(
-  missionTypeMapping: Record<string, string>,
+  missionTypeMapping: Record<string, string> | undefined,
 ): DataTableColumns<MissionInfo> {
   let missionTypeFilterOptions: { label: string; value: string }[] = [];
-  for (const [sourceName, mappedName] of Object.entries(missionTypeMapping)) {
-    missionTypeFilterOptions.push({ label: mappedName, value: sourceName });
+  if (missionTypeMapping !== undefined) {
+    for (const [sourceName, mappedName] of Object.entries(missionTypeMapping)) {
+      missionTypeFilterOptions.push({ label: mappedName, value: sourceName });
+    }
   }
   return [
     {
@@ -60,7 +62,6 @@ function createMissionListColumns(
       key: "beginTimestamp",
       align: "center",
       defaultSortOrder: "descend",
-      sortOrder: "descend",
       sorter(a, b) {
         return a.beginTimestamp - b.beginTimestamp;
       },
@@ -168,7 +169,7 @@ function createMissionListColumns(
 const router = useRouter();
 const message = useMessage();
 const missionList = ref<MissionInfo[]>([]);
-const missionColumn = ref<DataTableColumns<MissionInfo>>();
+const missionTypeMapping = ref<Record<string, string>>();
 
 const lastSelectedMissionId = ref<number | null>(null);
 
@@ -189,7 +190,7 @@ fetch(`./api/mission/mission_list`)
         message.error(`API Error while loading mission list: ${res.code} ${res.message}`);
       } else {
         missionList.value = res.data.missionInfo;
-        missionColumn.value = createMissionListColumns(res.data.missionTypeMapping);
+        missionTypeMapping.value = res.data.missionTypeMapping;
       }
     },
   )
@@ -202,7 +203,7 @@ fetch(`./api/mission/mission_list`)
   <n-card title="任务列表">
     <div class="table-container">
       <n-data-table
-        :columns="missionColumn"
+        :columns="createMissionListColumns(missionTypeMapping)"
         :data="missionList"
         :pagination="{ pageSize: 10 }"
         :row-props="rowProps"
