@@ -54,14 +54,13 @@ const theme = computed(() => {
       : lightTheme
     : userTheme.value === "dark"
       ? darkTheme
-      : lightTheme
+      : lightTheme;
 });
 
 const toggleTheme = () => {
   followSystemTheme.value = false;
   userTheme.value = theme.value === darkTheme ? "light" : "dark";
 };
-
 </script>
 
 <template>
@@ -87,12 +86,10 @@ const toggleTheme = () => {
           <div class="theme-switch">
             <n-tooltip trigger="hover" placement="bottom">
               <template #trigger>
-                <n-checkbox v-model="followSystemTheme">
-                  跟随系统
-                </n-checkbox>
+                <n-checkbox v-model:checked="followSystemTheme"> 跟随系统 </n-checkbox>
               </template>
               <template #default>
-                <n-button text @click="toggleTheme">
+                <n-button text @click="toggleTheme" :disabled="followSystemTheme">
                   <n-icon>
                     <template v-if="theme === darkTheme">
                       <Moon />
@@ -145,7 +142,7 @@ const toggleTheme = () => {
 <style scoped>
 .n-layout-header {
   display: grid;
-  grid-template-columns: 2fr 5fr 5fr 5fr 1fr;
+  grid-template-columns: 2fr 5fr 5fr 5fr 1.2fr;
   max-height: 10%;
 }
 
