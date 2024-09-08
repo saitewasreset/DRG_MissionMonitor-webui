@@ -137,6 +137,8 @@ function createNitraPlot(resourceData: ResourceData) {
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -240,6 +242,8 @@ function createResourcePlot(resourceData: ResourceData, mapping: Record<string, 
   const plotLayout: Partial<Plotly.Layout> = {
     width: 600,
     height: 400,
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -330,6 +334,8 @@ function createPlayerResourcePlot(resourceData: ResourceData) {
   const plotLayout: Partial<Plotly.Layout> = {
     width: 600,
     height: 400,
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];

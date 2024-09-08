@@ -144,6 +144,8 @@ function createPlot() {
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -230,6 +232,8 @@ function createPlot() {
     ],
     {
       title: "心碎值",
+      paper_bgcolor: "rgba(255,255,255, 0)",
+      plot_bgcolor: "rgba(255,255,255, 0)",
     },
   );
 }
@@ -378,6 +382,8 @@ function createCausePlot() {
   const layout = {
     height: 400,
     width: 600,
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
   if (props.overallDamageInfo === undefined) {
     return;
@@ -420,6 +426,8 @@ function createTakePlot() {
   const layout = {
     height: 400,
     width: 600,
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
   if (props.overallDamageInfo === undefined) {
     return;

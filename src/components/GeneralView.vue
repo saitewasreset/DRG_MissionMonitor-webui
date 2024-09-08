@@ -181,6 +181,8 @@ function createMissionTypePlot(missionInfo: MissionInfo) {
       rows: 1,
       columns: 1,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -346,6 +348,8 @@ function createPlayerInfoPlot(playerData: PlayerData) {
       rows: 2,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let characterLabels: string[] = [];
@@ -356,11 +360,11 @@ function createPlayerInfoPlot(playerData: PlayerData) {
   let playerDeathNumList: number[] = [];
   let playerSupplyCountList: number[] = [];
 
-  if (CharacterInfoData.value === undefined) {
+  if (characterInfoData.value === undefined) {
     return;
   }
 
-  let characterCountMap: Record<string, number> = CharacterInfoData.value.characterCount;
+  let characterCountMap: Record<string, number> = characterInfoData.value.characterCount;
 
   const characterToColor: Record<string, string> = {
     SCOUT: "#00BFFF",
@@ -526,6 +530,8 @@ function createCharacterInfoPlot(characterGeneralInfo: CharacterGeneralInfo) {
       rows: 2,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let characterLabels: string[] = [];
@@ -620,9 +626,10 @@ function createCharacterInfoPlot(characterGeneralInfo: CharacterGeneralInfo) {
 
 const message = useMessage();
 const generalInfoData = ref<GeneralInfo>();
-const MissionInfoData = ref<MissionInfo>();
-const PlayerInfoData = ref<PlayerData>();
-const CharacterInfoData = ref<CharacterInfo>();
+const missionInfoData = ref<MissionInfo>();
+const playerInfoData = ref<PlayerData>();
+const characterInfoData = ref<CharacterInfo>();
+const characterGeneralInfo = ref<CharacterGeneralInfo>();
 
 const missionTypeTableData = ref<MissionTypeInfoTableRow[]>([]);
 const playerInfoTableData = ref<PlayerInfoTableRow[]>([]);
@@ -647,7 +654,7 @@ fetch("./api/general/mission_type")
     if (res.code !== 200) {
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
-      MissionInfoData.value = res.data;
+      missionInfoData.value = res.data;
       missionTypeTableData.value = createMissionTypeTableData(res.data);
       createMissionTypePlot(res.data);
     }
@@ -662,7 +669,7 @@ fetch("./api/general/player")
     if (res.code !== 200) {
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
-      PlayerInfoData.value = res.data;
+      playerInfoData.value = res.data;
       playerInfoTableData.value = createPlayerInfoTableData(res.data);
       createPlayerInfoPlot(res.data);
     }
@@ -677,7 +684,7 @@ fetch("./api/general/character_info")
     if (res.code !== 200) {
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
-      CharacterInfoData.value = res.data;
+      characterInfoData.value = res.data;
     }
   })
   .catch((err) => {
@@ -690,6 +697,7 @@ fetch("./api/general/character")
     if (res.code !== 200) {
       message.error(`API Error: ${res.code} ${res.message}`);
     } else {
+      characterGeneralInfo.value = res.data;
       characterInfoTableData.value = generateCharacterInfoTableData(res.data);
       createCharacterInfoPlot(res.data);
     }
@@ -698,9 +706,9 @@ fetch("./api/general/character")
     message.error(`HTTP Error: ${err}`);
   });
 
-watch([() => CharacterInfoData.value, () => PlayerInfoData.value], () => {
-  if (PlayerInfoData.value !== undefined) {
-    createPlayerInfoPlot(PlayerInfoData.value);
+watch([() => characterInfoData.value, () => playerInfoData.value], () => {
+  if (playerInfoData.value !== undefined) {
+    createPlayerInfoPlot(playerInfoData.value);
   }
 });
 </script>

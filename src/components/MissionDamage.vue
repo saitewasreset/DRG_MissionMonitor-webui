@@ -180,6 +180,8 @@ function createDamagePlot(playerDamageInfoData: Record<string, PlayerDamageInfo>
       rows: 2,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -278,6 +280,8 @@ function createWeaponPlot(weaponDamageInfoData: Record<string, WeaponDamageInfo>
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -530,6 +534,8 @@ function createFriendlyFirePlot(playerDamageInfoData: Record<string, PlayerDamag
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -672,6 +678,8 @@ function createEnemyPlot(
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];

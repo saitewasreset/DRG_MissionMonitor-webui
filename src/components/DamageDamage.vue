@@ -177,6 +177,8 @@ function createDamagePlot() {
       rows: 2,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   let plotLabels: string[] = [];
@@ -351,6 +353,8 @@ function createWeaponPlot() {
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   if (props.weaponDamageInfo === undefined) {
@@ -515,6 +519,8 @@ function createCharacterPlot() {
       rows: 2,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   const characterToColor: Record<string, string> = {
@@ -678,6 +684,8 @@ function createEnemyPlot() {
       rows: 1,
       columns: 2,
     },
+    paper_bgcolor: "rgba(255,255,255, 0)",
+    plot_bgcolor: "rgba(255,255,255, 0)",
   };
 
   if (props.entityData === undefined) {
