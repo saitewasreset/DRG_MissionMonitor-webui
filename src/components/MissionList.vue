@@ -139,6 +139,9 @@ function createMissionListColumns(
       title: "奖励代币",
       key: "rewardCredit",
       align: "center",
+      sorter(a, b) {
+        return a.rewardCredit - b.rewardCredit;
+      },
       render(row) {
         return nFormatter(row.rewardCredit, 2);
       },
