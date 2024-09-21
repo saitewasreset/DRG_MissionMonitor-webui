@@ -202,6 +202,15 @@ function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
     playerKPIInfoTableData.value[playerName] = [];
     for (const characterInfo of Object.values(playerInfo.byCharacter)) {
       for (const missionKPIInfo of characterInfo.missionKPIList) {
+        let KPI;
+        if (missionKPIInfo.rawKPI < 0) {
+          KPI = missionKPIInfo.rawKPI / missionKPIInfo.characterFactor;
+        } else {
+          KPI = missionKPIInfo.rawKPI * missionKPIInfo.characterFactor;
+          if (KPI > 1) {
+            KPI = 1;
+          }
+        }
         playerKPIInfoTableData.value[playerName].push({
           missionId: missionKPIInfo.missionId,
           missionBeginTimestamp: missionKPIInfo.beginTimestamp,
@@ -210,7 +219,7 @@ function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
           playerIndex: missionKPIInfo.playerIndex,
           rawKPI: missionKPIInfo.rawKPI,
           characterFactor: missionKPIInfo.characterFactor,
-          KPI: missionKPIInfo.rawKPI * missionKPIInfo.characterFactor,
+          KPI: KPI,
         });
       }
     }
