@@ -14,6 +14,7 @@ import {
   NFlex,
   NButton,
   NCheckbox,
+  NGlobalStyle,
 } from "naive-ui";
 import { mappingError } from "./mapping";
 import { TaskAssetView, FavoriteFilled, LogoGithub, Sun, Moon } from "@vicons/carbon";
@@ -62,11 +63,11 @@ const toggleTheme = () => {
   followSystemTheme.value = false;
   userTheme.value = theme.value === darkTheme ? "light" : "dark";
 };
-
 </script>
 
 <template>
   <n-config-provider :locale="zhCN" :date-locale="dateZhCN" :theme="theme">
+    <n-global-style />
     <n-space vertical size="large">
       <n-layout position="absolute" style="min-width: 1400px">
         <n-layout-header bordered style="height: 64px">
@@ -109,7 +110,7 @@ const toggleTheme = () => {
                     </n-icon>
                   </n-button>
                 </template>
-                <span>{{ followSystemTheme ? '取消跟随系统主题以手动切换' : '点击切换主题' }}</span>
+                <span>{{ followSystemTheme ? "取消跟随系统主题以手动切换" : "点击切换主题" }}</span>
               </n-tooltip>
             </div>
           </div>
