@@ -28,7 +28,7 @@ export interface CharacterDamageInfo {
     cause: number;
     take: number;
   };
-  validGameCount: number;
+  playerIndex: number;
   mappedName: string;
 }
 

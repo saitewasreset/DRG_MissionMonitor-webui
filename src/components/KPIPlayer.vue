@@ -10,8 +10,8 @@ import {
 } from "naive-ui";
 import { ref, h } from "vue";
 import { translate } from "@/mapping";
-import { generateCharacterClass, formatMissionDate } from "@/formatter";
-import { characterFilterOptions } from "@/tool";
+import {formatMissionDate, generateKPICharacterClass, getKPICharacterName } from "@/formatter";
+import { kpiCharacterFilterOptions } from "@/tool";
 
 import MissionDetails from "./MissionDetails.vue";
 
@@ -20,41 +20,35 @@ import type { Response } from "@/type";
 interface MissionKPIInfo {
   missionId: number;
   beginTimestamp: number;
-  presentTime: number;
   playerIndex: number;
-  characterFactor: number;
-  rawKPI: number;
+  missionKPI: number;
 }
 
 interface PlayerCharacterKPIInfo {
-  count: number;
-  KPI: number;
-  characterGameId: string;
-  characterSubtype: string;
-  missionKPIList: MissionKPIInfo[];
+  playerIndex: number;
+  characterKPI: number;
+  characterKPIType: string;
+  missionList: MissionKPIInfo[];
 }
 
 type PlayerKPIInfo = Record<
   string,
-  { count: number; KPI: number; byCharacter: Record<string, PlayerCharacterKPIInfo> }
+  { playerIndex: number; playerKPI: number; byCharacter: Record<string, PlayerCharacterKPIInfo> }
 >;
 
 interface OverallKPIInfoRow {
   playerName: string;
-  totalCount: number;
+  playerIndex: number;
   playerKPI: number;
   children?: OverallKPIInfoRow[];
 }
 
 interface PlayerKPIInfoRow {
   missionId: number;
-  missionBeginTimestamp: number;
-  characterGameId: string;
-  characterSubtype: string;
+  beginTimestamp: number;
+  characterKPIType: string;
   playerIndex: number;
-  rawKPI: number;
-  characterFactor: number;
-  KPI: number;
+  missionKPI: number;
 }
 
 function createOverallKPIInfoTableColumns(): DataTableColumns<OverallKPIInfoRow> {
@@ -66,17 +60,17 @@ function createOverallKPIInfoTableColumns(): DataTableColumns<OverallKPIInfoRow>
       render(row) {
         return h(
           "span",
-          { class: generateCharacterClass(row.playerName) },
-          translate(row.playerName).value,
+          { class: generateKPICharacterClass(row.playerName) },
+          getKPICharacterName(row.playerName),
         );
       },
     },
     {
       title: "总玩家指数",
-      key: "totalCount",
+      key: "playerIndex",
       align: "center",
       render(row) {
-        return row.totalCount.toFixed(2);
+        return row.playerIndex.toFixed(2);
       },
     },
     {
@@ -97,15 +91,15 @@ function generateOverallKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
   for (const [playerName, playerInfo] of Object.entries(playerKPIData)) {
     const row: OverallKPIInfoRow = {
       playerName,
-      totalCount: playerInfo.count,
-      playerKPI: playerInfo.KPI,
+      playerIndex: playerInfo.playerIndex,
+      playerKPI: playerInfo.playerKPI,
       children: [],
     };
     for (const characterInfo of Object.values(playerInfo.byCharacter)) {
       row.children?.push({
-        playerName: characterInfo.characterGameId,
-        totalCount: characterInfo.count,
-        playerKPI: characterInfo.KPI,
+        playerName: characterInfo.characterKPIType,
+        playerIndex: characterInfo.playerIndex,
+        playerKPI: characterInfo.characterKPI,
       });
     }
     overallKPIInfoTableData.value.push(row);
@@ -123,37 +117,32 @@ function createPlayerKPIInfoTableColumns(): DataTableColumns<PlayerKPIInfoRow> {
   return [
     {
       title: "时间",
-      key: "missionBeginTimestamp",
+      key: "beginTimestamp",
       align: "center",
       defaultSortOrder: "descend",
       sortOrder: "descend",
       sorter(a, b) {
-        return a.missionBeginTimestamp - b.missionBeginTimestamp;
+        return a.beginTimestamp - b.beginTimestamp;
       },
       render(row) {
-        return formatMissionDate(row.missionBeginTimestamp);
+        return formatMissionDate(row.beginTimestamp);
       },
     },
     {
       title: "角色",
-      key: "characterGameId",
+      key: "characterKPIType",
       align: "center",
       render(row) {
         return h(
           "span",
-          { class: generateCharacterClass(row.characterGameId) },
-          translate(row.characterGameId).value,
+          { class: generateKPICharacterClass(row.characterKPIType) },
+          getKPICharacterName(row.characterKPIType),
         );
       },
-      filterOptions: characterFilterOptions,
+      filterOptions: kpiCharacterFilterOptions,
       filter(value, row) {
-        return row.characterGameId === value;
+        return row.characterKPIType === value;
       },
-    },
-    {
-      title: "子类型",
-      key: "characterSubtype",
-      align: "center",
     },
     {
       title: "玩家指数",
@@ -164,33 +153,14 @@ function createPlayerKPIInfoTableColumns(): DataTableColumns<PlayerKPIInfoRow> {
       },
     },
     {
-      title: "原始KPI",
-      key: "rawKPI",
+      title: "任务KPI",
+      key: "missionKPI",
       align: "center",
       render(row) {
-        return (row.rawKPI * 100).toFixed(2);
+        return (row.missionKPI * 100).toFixed(2);
       },
       sorter(a, b) {
-        return a.rawKPI - b.rawKPI;
-      },
-    },
-    {
-      title: "修正因子",
-      key: "characterFactor",
-      align: "center",
-      render(row) {
-        return row.characterFactor.toFixed(3);
-      },
-    },
-    {
-      title: "修正KPI",
-      key: "KPI",
-      align: "center",
-      render(row) {
-        return (row.KPI * 100).toFixed(2);
-      },
-      sorter(a, b) {
-        return a.KPI - b.KPI;
+        return a.missionKPI - b.missionKPI;
       },
     },
   ];
@@ -201,25 +171,13 @@ function generatePlayerKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
   for (const [playerName, playerInfo] of Object.entries(playerKPIData)) {
     playerKPIInfoTableData.value[playerName] = [];
     for (const characterInfo of Object.values(playerInfo.byCharacter)) {
-      for (const missionKPIInfo of characterInfo.missionKPIList) {
-        let KPI;
-        if (missionKPIInfo.rawKPI < 0) {
-          KPI = missionKPIInfo.rawKPI / missionKPIInfo.characterFactor;
-        } else {
-          KPI = missionKPIInfo.rawKPI * missionKPIInfo.characterFactor;
-          if (KPI > 1) {
-            KPI = 1;
-          }
-        }
+      for (const missionKPIInfo of characterInfo.missionList) {
         playerKPIInfoTableData.value[playerName].push({
           missionId: missionKPIInfo.missionId,
-          missionBeginTimestamp: missionKPIInfo.beginTimestamp,
-          characterGameId: characterInfo.characterGameId,
-          characterSubtype: characterInfo.characterSubtype,
+          beginTimestamp: missionKPIInfo.beginTimestamp,
+          characterKPIType: characterInfo.characterKPIType,
           playerIndex: missionKPIInfo.playerIndex,
-          rawKPI: missionKPIInfo.rawKPI,
-          characterFactor: missionKPIInfo.characterFactor,
-          KPI: KPI,
+          missionKPI: missionKPIInfo.missionKPI,
         });
       }
     }

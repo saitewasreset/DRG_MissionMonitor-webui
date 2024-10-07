@@ -401,20 +401,20 @@ watch(
 
     fetch(`./api/mission/${props.missionId == undefined ? 1 : props.missionId}/resource`)
       .then((res) => res.json())
-      .then((data: Response<{ info: ResourceData; resourceMapping: Record<string, string> }>) => {
+      .then((data: Response<{ data: ResourceData; resourceMapping: Record<string, string> }>) => {
         if (data.code !== 200) {
           message.error(`API Error: ${data.code} ${data.message}`);
         } else {
-          resourceData.value = data.data.info;
+          resourceData.value = data.data.data;
 
-          nitraTableData.value = generateNitraTableData(data.data.info);
-          createNitraPlot(data.data.info);
+          nitraTableData.value = generateNitraTableData(data.data.data);
+          createNitraPlot(data.data.data);
 
-          resourceTableData.value = generateResourceTableData(data.data.info);
-          createResourcePlot(data.data.info, data.data.resourceMapping);
+          resourceTableData.value = generateResourceTableData(data.data.data);
+          createResourcePlot(data.data.data, data.data.resourceMapping);
 
-          playerResourceTableData.value = generatePlayerResourceTableData(data.data.info);
-          createPlayerResourcePlot(data.data.info);
+          playerResourceTableData.value = generatePlayerResourceTableData(data.data.data);
+          createPlayerResourcePlot(data.data.data);
         }
       })
       .catch((e) => message.error(`HTTP error: ${e}`));

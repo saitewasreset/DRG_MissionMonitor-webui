@@ -71,12 +71,12 @@ interface PlayerData {
 }
 
 interface CharacterInfo {
-  characterCount: Record<string, number>;
+  characterChoiceCount: Record<string, number>;
   characterMapping: Record<string, string>;
 }
 
 interface CharacterGeneralData {
-  validCount: number;
+  playerIndex: number;
   reviveNum: number;
   deathNum: number;
   mineralsMined: number;
@@ -85,7 +85,7 @@ interface CharacterGeneralData {
 }
 
 interface CharacterGeneralInfo {
-  characterInfo: Record<string, CharacterGeneralData>;
+  characterData: Record<string, CharacterGeneralData>;
   characterMapping: Record<string, string>;
 }
 
@@ -364,7 +364,7 @@ function createPlayerInfoPlot(playerData: PlayerData) {
     return;
   }
 
-  let characterCountMap: Record<string, number> = characterInfoData.value.characterCount;
+  let characterCountMap: Record<string, number> = characterInfoData.value.characterChoiceCount;
 
   const characterToColor: Record<string, string> = {
     SCOUT: "#00BFFF",
@@ -462,44 +462,44 @@ function createCharacterInfoTableColumns(): DataTableColumns<CharacterInfoTableR
       align: "center",
     },
     {
-      title: "有效数据数",
-      key: "validCount",
-      sorter: (a, b) => a.validCount - b.validCount,
-      render: (row) => row.validCount.toFixed(2),
+      title: "总计玩家指数",
+      key: "playerIndex",
+      sorter: (a, b) => a.playerIndex - b.playerIndex,
+      render: (row) => row.playerIndex.toFixed(2),
       defaultSortOrder: "descend",
       align: "center",
     },
     {
       title: "平均救人数",
-      key: "averageReviveNum",
-      render: (row) => (row.reviveNum / row.validCount).toFixed(2),
-      sorter: (a, b) => a.reviveNum / a.validCount - b.reviveNum / b.validCount,
+      key: "reviveNum",
+      render: (row) => row.reviveNum.toFixed(2),
+      sorter: (a, b) => a.reviveNum - b.reviveNum,
       align: "center",
     },
     {
       title: "平均倒地数",
-      key: "averageDeathNum",
-      render: (row) => (row.deathNum / row.validCount).toFixed(2),
-      sorter: (a, b) => a.deathNum / a.validCount - b.deathNum / b.validCount,
+      key: "deathNum",
+      render: (row) => row.deathNum.toFixed(2),
+      sorter: (a, b) => a.deathNum - b.deathNum,
       align: "center",
     },
     {
       title: "平均采集量",
-      key: "averageMineralsMined",
-      render: (row) => nFormatter(row.mineralsMined / row.validCount, 2),
-      sorter: (a, b) => a.mineralsMined / a.validCount - b.mineralsMined / b.validCount,
+      key: "mineralsMined",
+      render: (row) => nFormatter(row.mineralsMined, 2),
+      sorter: (a, b) => a.mineralsMined - b.mineralsMined,
       align: "center",
     },
     {
       title: "平均补给份数",
-      key: "averageSupplyCount",
-      render: (row) => (row.supplyCount / row.validCount).toFixed(2),
-      sorter: (a, b) => a.supplyCount / a.validCount - b.supplyCount / b.validCount,
+      key: "supplyCount",
+      render: (row) => row.supplyCount.toFixed(2),
+      sorter: (a, b) => a.supplyCount - b.supplyCount,
       align: "center",
     },
     {
       title: "平均补给效率",
-      key: "averageSupplyEfficiency",
+      key: "supplyEfficiency",
       render: (row) => formatPercent(row.supplyEfficiency),
       sorter: (a, b) => a.supplyEfficiency - b.supplyEfficiency,
       align: "center",
@@ -508,14 +508,14 @@ function createCharacterInfoTableColumns(): DataTableColumns<CharacterInfoTableR
 }
 
 function generateCharacterInfoTableData(
-  characterData: CharacterGeneralInfo,
+  characterInfo: CharacterGeneralInfo,
 ): CharacterInfoTableRow[] {
   let result = [];
-  for (const [characterGameId, characterInfo] of Object.entries(characterData.characterInfo)) {
+  for (const [characterGameId, characterData] of Object.entries(characterInfo.characterData)) {
     result.push({
       characterGameId,
-      characterName: characterData.characterMapping[characterGameId],
-      ...characterInfo,
+      characterName: characterInfo.characterMapping[characterGameId],
+      ...characterData,
     });
   }
 
@@ -548,15 +548,15 @@ function createCharacterInfoPlot(characterGeneralInfo: CharacterGeneralInfo) {
     GUNNER: "#008000",
   };
 
-  for (const [characterGameId, characterInfo] of Object.entries(
-    characterGeneralInfo.characterInfo,
+  for (const [characterGameId, characterData] of Object.entries(
+    characterGeneralInfo.characterData,
   )) {
     characterLabels.push(characterGeneralInfo.characterMapping[characterGameId]);
     characterColorList.push(characterToColor[characterGameId]);
-    characterReviveNumList.push(characterInfo.reviveNum / characterInfo.validCount);
-    characterDeathNumList.push(characterInfo.deathNum / characterInfo.validCount);
-    characterMineralsMinedList.push(characterInfo.mineralsMined / characterInfo.validCount);
-    characterSupplyCountList.push(characterInfo.supplyCount / characterInfo.validCount);
+    characterReviveNumList.push(characterData.reviveNum);
+    characterDeathNumList.push(characterData.deathNum);
+    characterMineralsMinedList.push(characterData.mineralsMined);
+    characterSupplyCountList.push(characterData.supplyCount);
   }
 
   let data: Data[] = [
@@ -635,7 +635,7 @@ const missionTypeTableData = ref<MissionTypeInfoTableRow[]>([]);
 const playerInfoTableData = ref<PlayerInfoTableRow[]>([]);
 const characterInfoTableData = ref<CharacterInfoTableRow[]>([]);
 
-fetch("./api/general")
+fetch("./api/general/")
   .then((res) => res.json())
   .then((res: Response<GeneralInfo>) => {
     if (res.code !== 200) {

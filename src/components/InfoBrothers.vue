@@ -15,14 +15,14 @@ import { ref } from "vue";
 import { formatMissionTime, formatMissionDateRelative, formatPercent } from "@/formatter";
 
 interface OverallBrothersInfo {
-  playerCount: number;
+  unfamiliarPlayerCount: number;
   playerSpotPercent: number;
-  playerAvgSpot: number;
+  playerAverageSpot: number;
   playerGeTwoPercent: number;
 }
 
 interface BrotherInfo {
-  count: number;
+  gameCount: number;
   presenceTime: number;
   lastSpot: number;
   spotCount: number;
@@ -36,7 +36,7 @@ interface BrothersData {
 
 interface BrothersTableRow {
   playerName: string;
-  count: number;
+  gameCount: number;
   spotCount: number;
   presenceTime: number;
   lastSpot: number;
@@ -51,10 +51,10 @@ function createBrothersTableColumns(): DataTableColumns<BrothersTableRow> {
     },
     {
       title: "游戏局数",
-      key: "count",
+      key: "gameCount",
       align: "center",
       sorter(a, b) {
-        return a.count - b.count;
+        return a.gameCount - b.gameCount;
       },
     },
     {
@@ -96,7 +96,7 @@ function generateBrothersTableData(playerData: Record<string, BrotherInfo>): Bro
   for (const [playerName, data] of Object.entries(playerData)) {
     result.push({
       playerName,
-      count: data.count,
+      gameCount: data.gameCount,
       spotCount: data.spotCount,
       presenceTime: data.presenceTime,
       lastSpot: data.lastSpot,
@@ -110,9 +110,9 @@ const message = useMessage();
 const brothersTableData = ref<BrothersTableRow[]>([]);
 
 const overallBrothersInfo = ref<OverallBrothersInfo>({
-  playerCount: 0,
+  unfamiliarPlayerCount: 0,
   playerSpotPercent: 0,
-  playerAvgSpot: 0,
+  playerAverageSpot: 0,
   playerGeTwoPercent: 0,
 });
 
@@ -134,7 +134,7 @@ fetch("./api/info/brothers")
   <n-card title="总览">
     <n-grid :cols="4">
       <n-gi>
-        <n-statistic label="路人玩家数" :value="overallBrothersInfo.playerCount"></n-statistic>
+        <n-statistic label="路人玩家数" :value="overallBrothersInfo.unfamiliarPlayerCount"></n-statistic>
       </n-gi>
       <n-gi>
         <n-statistic label="再相遇概率">{{
@@ -143,7 +143,7 @@ fetch("./api/info/brothers")
       </n-gi>
       <n-gi>
         <n-statistic label="平均再相遇次数">{{
-          overallBrothersInfo.playerAvgSpot.toFixed(2)
+          overallBrothersInfo.playerAverageSpot.toFixed(2)
         }}</n-statistic>
       </n-gi>
       <n-gi>

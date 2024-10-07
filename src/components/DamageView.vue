@@ -19,7 +19,7 @@ const weaponDamageInfo = ref<Record<string, WeaponDamageInfo>>();
 const characterDamageInfo = ref<Record<string, CharacterDamageInfo>>();
 const entityData = ref<EntityData>();
 
-fetch("./api/damage")
+fetch("./api/damage/")
   .then((res) => res.json())
   .then((data: ResponseData<OverallDamageInfo>) => {
     if (data.code !== 200) {

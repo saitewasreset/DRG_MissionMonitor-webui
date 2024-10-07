@@ -16,7 +16,7 @@ interface PlayerDamageInfo {
 interface WeaponDamageInfo {
   damage: number;
   friendlyFire: number;
-  heroGameId: string;
+  characterGameId: string;
   mappedName: string;
 }
 
@@ -495,10 +495,9 @@ function generateWeaponTableData(
       damage: weaponData.damage,
       friendlyFire: weaponData.friendlyFire,
       friendlyFireRate: weaponData.friendlyFire / (weaponData.damage + weaponData.friendlyFire),
-      heroGameId: weaponData.heroGameId,
+      heroGameId: weaponData.characterGameId,
     });
   }
-
   return result;
 }
 

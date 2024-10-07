@@ -199,3 +199,37 @@ export function nFormatter(num: number | undefined, digits: number) {
   const item = lookup.find((item) => num >= item.value);
   return item ? (num / item.value).toFixed(digits).replace(regexp, "").concat(item.symbol) : "0";
 }
+
+export function generateKPICharacterClass(source: string) {
+  switch (source) {
+    case "driller":
+      return "driller";
+    case "engineer":
+      return "engineer";
+    case "gunner":
+      return "gunner";
+    case "scout":
+      return "scout";
+    case "scout_special":
+      return "scout";
+    default:
+      return "";
+  }
+}
+
+export function getKPICharacterName(source: string) {
+  switch (source) {
+    case "driller":
+      return "钻机";
+    case "engineer":
+      return "工程";
+    case "gunner":
+      return "枪手";
+    case "scout":
+      return "侦察";
+    case "scout_special":
+      return "侦察-输出型";
+    default:
+      return source;
+  }
+}

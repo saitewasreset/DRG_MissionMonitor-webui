@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface MissionGeneralPlayerInfo {
-  heroGameId: string;
+  characterGameId: string;
   playerRank: number;
   characterRank: number;
   characterPromotion: number;
@@ -85,7 +85,7 @@ function generateTableData(
   for (const [playerName, playerData] of Object.entries(playerInfo)) {
     result.push({
       playerName,
-      heroGameId: playerData.heroGameId,
+      heroGameId: playerData.characterGameId,
       playerRank: playerData.playerRank,
       characterRank: playerData.characterRank,
       characterTitle: formatCharacterTitle(playerData.characterPromotion),

@@ -6,7 +6,7 @@ interface MappingResponse {
   data: Record<string, Record<string, string>>;
 }
 
-const mappingUrl = "./api/mapping/";
+const mappingUrl = "./api/mapping";
 
 export const mappingData = ref<Record<string, Record<string, string>> | null>(null);
 export const mappingError = ref<string | null>(null);

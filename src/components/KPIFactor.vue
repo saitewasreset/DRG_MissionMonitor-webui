@@ -1,24 +1,9 @@
 <script setup lang="ts">
-type KPIFactorData = Record<
-  number,
-  Record<
-    number,
-    {
-      data: number[];
-      factor: number;
-      median: number;
-      average: number;
-      std: number;
-    }
-  >
->;
-
 type GammaInnerInfo = Record<
   string,
   {
-    gameCount: number;
+    playerIndex: number;
     value: number;
-    avg: number;
     ratio: number;
   }
 >;
@@ -31,8 +16,8 @@ interface WeightTableData {
   driller: number;
   gunner: number;
   engineer: number;
-  scoutA: number;
-  scoutB: number;
+  scout: number;
+  scoutSpecial: number;
 }
 
 interface Response<T> {
@@ -41,125 +26,11 @@ interface Response<T> {
   data: T;
 }
 
-interface KPIFactorInfoRow {
-  promotionRangeId: number;
-  validCount: number;
-  median: number;
-  average: number;
-  std: number;
-  factor: number;
-}
-
 interface GammaRow {
-  characterGameId: string;
-  gameCount: number;
+  kpiCharacterType: string;
+  playerIndex: number;
   average: number;
   ratio: number;
-}
-
-function createKPIFactorTableColumns(): DataTableColumns<KPIFactorInfoRow> {
-  return [
-    {
-      title: "头衔",
-      key: "promotionRangeId",
-      align: "center",
-      render(row) {
-        const promotionRangeIdToClass = [
-          "",
-          "bronze",
-          "silver",
-          "gold",
-          "platinum",
-          "diamond",
-          "legendary",
-        ];
-        const promotionRangeIdToName = [
-          "None",
-          "Bronze",
-          "Silver",
-          "Gold",
-          "Platinum",
-          "Diamond",
-          "Legendary",
-        ];
-        return h(
-          "span",
-          { class: promotionRangeIdToClass[row.promotionRangeId] },
-          promotionRangeIdToName[row.promotionRangeId],
-        );
-      },
-    },
-    {
-      title: "有效数据量",
-      key: "validCount",
-      align: "center",
-    },
-    {
-      title: "平均数",
-      key: "median",
-      align: "center",
-      render(row) {
-        if (row.average === 0.0) {
-          return "-";
-        } else {
-          return (row.average * 100).toFixed(2);
-        }
-      },
-    },
-    {
-      title: "中位数",
-      key: "median",
-      align: "center",
-      render(row) {
-        if (row.median === 0.0) {
-          return "-";
-        } else {
-          return (row.median * 100).toFixed(2);
-        }
-      },
-    },
-    {
-      title: "标准差",
-      key: "median",
-      align: "center",
-      render(row) {
-        if (row.std === 0.0) {
-          return "-";
-        } else {
-          return (row.std * 100).toFixed(2);
-        }
-      },
-    },
-    {
-      title: "修正因子",
-      key: "factor",
-      align: "center",
-      render(row) {
-        if (row.factor === 0.0) {
-          return "-";
-        } else {
-          return row.factor.toFixed(3);
-        }
-      },
-    },
-  ];
-}
-
-function generateKPIFactorTableData(factorData: KPIFactorData, characterType: number) {
-  const kpiFactorInfoRows: KPIFactorInfoRow[] = [];
-  for (const promotionRangeId in factorData[characterType]) {
-    const promotionRangeIdNum = parseInt(promotionRangeId);
-    const factorInfo = factorData[characterType][promotionRangeIdNum];
-    kpiFactorInfoRows.push({
-      promotionRangeId: promotionRangeIdNum,
-      validCount: factorInfo.data.length,
-      median: factorInfo.median,
-      factor: factorInfo.factor,
-      average: factorInfo.average,
-      std: factorInfo.std,
-    });
-  }
-  factorTableData.value[characterType] = kpiFactorInfoRows;
 }
 
 function createWeightTableDataColumns(): DataTableColumns<WeightTableData> {
@@ -207,18 +78,18 @@ function createWeightTableDataColumns(): DataTableColumns<WeightTableData> {
     },
     {
       title: "侦察：辅助型",
-      key: "scoutA",
+      key: "scout",
       align: "center",
       sorter(a, b) {
-        return a.scoutA - b.scoutA;
+        return a.scout - b.scout;
       },
     },
     {
       title: "侦察：输出型",
-      key: "scoutB",
+      key: "scoutSpecial",
       align: "center",
       sorter(a, b) {
-        return a.scoutB - b.scoutB;
+        return a.scoutSpecial - b.scoutSpecial;
       },
     },
   ];
@@ -228,22 +99,22 @@ function createGammaTableColumns(): DataTableColumns<GammaRow> {
   return [
     {
       title: "角色",
-      key: "characterGameId",
+      key: "kpiCharacterType",
       align: "center",
       render(row) {
         return h(
           "span",
-          { class: generateCharacterClass(row.characterGameId) },
-          translate(row.characterGameId).value,
+          { class: generateKPICharacterClass(row.kpiCharacterType) },
+          getKPICharacterName(row.kpiCharacterType),
         );
       },
     },
     {
-      title: "有效数据数量",
-      key: "gameCount",
+      title: "总计玩家指数",
+      key: "playerIndex",
       align: "center",
       render(row) {
-        return row.gameCount.toFixed(2);
+        return row.playerIndex.toFixed(2);
       },
     },
     {
@@ -272,11 +143,11 @@ function createGammaTableColumns(): DataTableColumns<GammaRow> {
 function generateGammaTableData(gammaData: GammaInfo, element: string): GammaRow[] {
   const gammaRows: GammaRow[] = [];
 
-  for (const [characterGameId, characterData] of Object.entries(gammaData[element])) {
+  for (const [kpiCharacterType, characterData] of Object.entries(gammaData[element])) {
     gammaRows.push({
-      characterGameId: characterGameId,
-      gameCount: characterData.gameCount,
-      average: characterData.avg,
+      kpiCharacterType: kpiCharacterType,
+      playerIndex: characterData.playerIndex,
+      average: characterData.value,
       ratio: characterData.ratio,
     });
   }
@@ -284,36 +155,17 @@ function generateGammaTableData(gammaData: GammaInfo, element: string): GammaRow
   return gammaRows;
 }
 
+import { translate } from "@/mapping";
 import { ref, h } from "vue";
 import { NGrid, NGi, NFlex, NCard, NDataTable, useMessage, type DataTableColumns } from "naive-ui";
 
-import { translate } from "@/mapping";
-import { generateCharacterClass } from "@/formatter";
+import { generateKPICharacterClass, getKPICharacterName } from "@/formatter";
 
 const message = useMessage();
-
-const factorData = ref<KPIFactorData>({});
-const factorTableData = ref<Record<number, KPIFactorInfoRow[]>>([]);
 
 const weightTableData = ref<WeightTableData[]>([]);
 
 const GammaData = ref<GammaInfo>({ kill: {}, damage: {}, nitra: {}, minerals: {} });
-
-fetch("./api/kpi/raw_data_by_promotion")
-  .then((res) => res.json())
-  .then((res: Response<KPIFactorData>) => {
-    if (res.code !== 200) {
-      message.error(`API Error while getting raw data by promotion: ${res.message}`);
-    } else {
-      factorData.value = res.data;
-      for (let i = 0; i <= 4; i++) {
-        generateKPIFactorTableData(factorData.value, i);
-      }
-    }
-  })
-  .catch((err) => {
-    message.error(`HTTP Error while getting raw data by promotion: ${err}`);
-  });
 
 fetch("./api/kpi/weight_table")
   .then((res) => res.json())
@@ -361,7 +213,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'kill')"
             :pagination="false"
-            :row-key="(row: GammaRow) => row.characterGameId"
+            :row-key="(row: GammaRow) => row.kpiCharacterType"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -372,7 +224,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'damage')"
             :pagination="false"
-            :row-key="(row: GammaRow) => row.characterGameId"
+            :row-key="(row: GammaRow) => row.kpiCharacterType"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -383,7 +235,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'nitra')"
             :pagination="false"
-            :row-key="(row: GammaRow) => row.characterGameId"
+            :row-key="(row: GammaRow) => row.kpiCharacterType"
             style="width: fit-content"
           ></n-data-table>
         </n-card>
@@ -394,66 +246,7 @@ fetch("./api/kpi/gamma")
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'minerals')"
             :pagination="false"
-            :row-key="(row: GammaRow) => row.characterGameId"
-            style="width: fit-content"
-          ></n-data-table>
-        </n-card>
-      </n-gi>
-    </n-grid>
-  </n-card>
-  <n-card title="原始KPI修正因子">
-    <n-grid :cols="3">
-      <n-gi>
-        <n-card title="钻机">
-          <n-data-table
-            :columns="createKPIFactorTableColumns()"
-            :data="factorTableData[0]"
-            :pagination="false"
-            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
-            style="width: fit-content"
-          ></n-data-table>
-        </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="枪手">
-          <n-data-table
-            :columns="createKPIFactorTableColumns()"
-            :data="factorTableData[1]"
-            :pagination="false"
-            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
-            style="width: fit-content"
-          ></n-data-table>
-        </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="工程">
-          <n-data-table
-            :columns="createKPIFactorTableColumns()"
-            :data="factorTableData[2]"
-            :pagination="false"
-            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
-            style="width: fit-content"
-          ></n-data-table>
-        </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="侦察：辅助型">
-          <n-data-table
-            :columns="createKPIFactorTableColumns()"
-            :data="factorTableData[3]"
-            :pagination="false"
-            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
-            style="width: fit-content"
-          ></n-data-table>
-        </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="侦察：输出型">
-          <n-data-table
-            :columns="createKPIFactorTableColumns()"
-            :data="factorTableData[4]"
-            :pagination="false"
-            :row-key="(row: KPIFactorInfoRow) => row.promotionRangeId"
+            :row-key="(row: GammaRow) => row.kpiCharacterType"
             style="width: fit-content"
           ></n-data-table>
         </n-card>

@@ -1,36 +1,28 @@
 <script setup lang="ts">
 import { ref, h, watch } from "vue";
-import { translate } from "@/mapping";
-import { generateCharacterClass, nFormatter } from "@/formatter";
+import {nFormatter, generateKPICharacterClass, getKPICharacterName } from "@/formatter";
 import { NAlert, NTag, useMessage, NDataTable, type DataTableColumns } from "naive-ui";
 
 import type { Response } from "@/type";
 
-interface CharacterSubtypeKPIInfo {
-  subtypeName: string;
-  priorityTable: Record<string, number>;
-  weightList: number[];
-}
-
 interface KPIInfo {
   version: string;
-  priorityTable: Record<string, number>;
-  character: Record<string, Record<string, CharacterSubtypeKPIInfo>>;
 }
 
 interface KPIComponent {
   name: string;
-  value: number;
+  sourceValue: number;
+  weightedValue: number;
+  missionTotalWeightedValue: number;
+  rawIndex: number;
+  correctedIndex: number;
+  transformedIndex: number;
   weight: number;
-  sourceThis: number;
-  sourceTotal: number;
 }
 
 interface MissionKPIInfo {
   playerName: string;
-  heroGameId: string;
-  subtypeId: number;
-  subtypeName: string;
+  kpiCharacterType: string;
   weightedKill: number;
   weightedDamage: number;
   priorityDamage: number;
@@ -39,15 +31,14 @@ interface MissionKPIInfo {
   friendlyFire: number;
   nitra: number;
   supplyCount: number;
-  resourceTotal: number;
+  weightedResource: number;
   component: KPIComponent[];
-  rawKPI: number;
+  missionKPI: number;
 }
 
 interface KPIDataTableRow {
   playerName: string;
-  heroGameId: string;
-  subtypeName: string;
+  kpiCharacterType: string;
   weightedKill: number;
   weightedDamage: number;
   priorityDamage: number;
@@ -56,18 +47,20 @@ interface KPIDataTableRow {
   friendlyFire: number;
   nitra: number;
   supplyCount: number;
-  resourceTotal: number;
+  weightedResource: number;
   component: KPIComponent[];
-  rawKPI: number;
+  missionKPI: number;
 }
 
 interface KPIDataTableExpandRow {
   name: string;
-  value: number;
+  sourceValue: number;
+  weightedValue: number;
+  missionTotalWeightedValue: number;
+  rawIndex: number;
+  correctedIndex: number;
+  transformedIndex: number;
   weight: number;
-  weightValue: number;
-  sourceThis: number;
-  sourceTotal: number;
 }
 
 function createKPITableExpandElement(row: KPIDataTableRow) {
@@ -78,27 +71,51 @@ function createKPITableExpandElement(row: KPIDataTableRow) {
       align: "center",
     },
     {
-      title: "玩家值",
-      key: "sourceThis",
+      title: "玩家原始值",
+      key: "sourceValue",
       align: "center",
       render(row) {
-        return nFormatter(row.sourceThis, 2);
+        return nFormatter(row.sourceValue, 2);
       },
     },
     {
-      title: "总值",
-      key: "sourceTotal",
+      title: "玩家加权值",
+      key: "weightedValue",
       align: "center",
       render(row) {
-        return nFormatter(row.sourceTotal, 2);
+        return nFormatter(row.weightedValue, 2);
       },
     },
     {
-      title: "比值",
-      key: "value",
+      title: "任务合计加权值",
+      key: "missionTotalWeightedValue",
       align: "center",
       render(row) {
-        return row.value.toFixed(3);
+        return nFormatter(row.missionTotalWeightedValue, 2);
+      },
+    },
+    {
+      title: "原始指标",
+      key: "rawIndex",
+      align: "center",
+      render(row) {
+        return row.rawIndex.toFixed(3);
+      },
+    },
+    {
+      title: "修正后指标",
+      key: "correctedIndex",
+      align: "center",
+      render(row) {
+        return row.correctedIndex.toFixed(3);
+      },
+    },
+    {
+      title: "赋分后指标",
+      key: "transformedIndex",
+      align: "center",
+      render(row) {
+        return row.transformedIndex.toFixed(3);
       },
     },
     {
@@ -114,7 +131,7 @@ function createKPITableExpandElement(row: KPIDataTableRow) {
       key: "weightValue",
       align: "center",
       render(row) {
-        return (row.value * row.weight).toFixed(3);
+        return (row.transformedIndex * row.weight).toFixed(3);
       },
     },
   ];
@@ -122,11 +139,13 @@ function createKPITableExpandElement(row: KPIDataTableRow) {
   const data: KPIDataTableExpandRow[] = row.component.map((component) => {
     return {
       name: component.name,
-      value: component.value,
+      sourceValue: component.sourceValue,
+      weightedValue: component.weightedValue,
+      missionTotalWeightedValue: component.missionTotalWeightedValue,
+      rawIndex: component.rawIndex,
+      correctedIndex: component.correctedIndex,
+      transformedIndex: component.transformedIndex,
       weight: component.weight,
-      weightValue: component.value * component.weight,
-      sourceThis: component.sourceThis,
-      sourceTotal: component.sourceTotal,
     };
   });
 
@@ -147,20 +166,15 @@ function createKPITableColumns(): DataTableColumns<KPIDataTableRow> {
     },
     {
       title: "角色",
-      key: "heroGameId",
+      key: "kpiCharacterType",
       align: "center",
       render(row) {
         return h(
           "span",
-          { class: generateCharacterClass(row.heroGameId) },
-          translate(row.heroGameId).value,
+          { class: generateKPICharacterClass(row.kpiCharacterType) },
+          getKPICharacterName(row.kpiCharacterType),
         );
       },
-    },
-    {
-      title: "子类型",
-      key: "subtypeName",
-      align: "center",
     },
     {
       title: "加权伤害",
@@ -215,19 +229,19 @@ function createKPITableColumns(): DataTableColumns<KPIDataTableRow> {
       align: "center",
     },
     {
-      title: "资源采集量",
+      title: "加权资源采集量",
       key: "resourceTotal",
       align: "center",
       render(row) {
-        return row.resourceTotal.toFixed(0);
+        return row.weightedResource.toFixed(0);
       },
     },
     {
-      title: "原始KPI",
-      key: "rawKPI",
+      title: "任务KPI",
+      key: "missionKPI",
       align: "center",
       render(row) {
-        return (row.rawKPI * 100).toFixed(2);
+        return (row.missionKPI * 100).toFixed(2);
       },
     },
   ];
@@ -238,8 +252,7 @@ function generateKPITableData(missionData: MissionKPIInfo[]): KPIDataTableRow[] 
   result = missionData.map((missionData) => {
     return {
       playerName: missionData.playerName,
-      heroGameId: missionData.heroGameId,
-      subtypeName: missionData.subtypeName,
+      kpiCharacterType: missionData.kpiCharacterType,
       weightedKill: missionData.weightedKill,
       weightedDamage: missionData.weightedDamage,
       priorityDamage: missionData.priorityDamage,
@@ -248,9 +261,9 @@ function generateKPITableData(missionData: MissionKPIInfo[]): KPIDataTableRow[] 
       friendlyFire: missionData.friendlyFire,
       nitra: missionData.nitra,
       supplyCount: missionData.supplyCount,
-      resourceTotal: missionData.resourceTotal,
+      weightedResource: missionData.weightedResource,
       component: missionData.component,
-      rawKPI: missionData.rawKPI,
+      missionKPI: missionData.missionKPI,
     };
   });
 
@@ -265,8 +278,6 @@ const message = useMessage();
 
 const kpiInfo = ref<KPIInfo>({
   version: "0.0.0",
-  priorityTable: {},
-  character: {},
 });
 
 const missionKpiInfo = ref<MissionKPIInfo[]>([]);
@@ -276,7 +287,7 @@ const kpiTableData = ref<KPIDataTableRow[]>([]);
 watch(
   () => props.missionId,
   () => {
-    fetch("./api/kpi")
+    fetch("./api/kpi/version")
       .then((response) => response.json())
       .then((data: Response<KPIInfo>) => {
         if (data.code !== 200) {
@@ -312,16 +323,13 @@ watch(
     <n-alert title="注意" type="warning" style="width: fit-content"
       >KPI计算仍处于测试阶段！</n-alert
     >
-    <n-alert title="注意" type="warning" style="width: fit-content"
-      >不同角色的原始KPI没有可比性！</n-alert
-    >
   </div>
   <div class="table-container">
     <n-data-table
       :columns="createKPITableColumns()"
       :data="kpiTableData"
       :pagination="false"
-      :row-key="(row: KPIDataTableRow) => row.playerName + row.subtypeName"
+      :row-key="(row: KPIDataTableRow) => row.playerName + row.kpiCharacterType"
       style="width: fit-content"
     ></n-data-table>
   </div>

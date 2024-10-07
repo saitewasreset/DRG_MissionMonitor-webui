@@ -497,10 +497,10 @@ function generateCharacterTableData(): CharacterTableRow[] {
   for (const [characterGameId, characterData] of Object.entries(props.characterDamageInfo)) {
     result.push({
       characterGameId,
-      validGameCount: characterData.validGameCount,
-      averageDamage: characterData.damage / characterData.validGameCount,
-      averageCauseDamage: characterData.friendlyFire.cause / characterData.validGameCount,
-      averageTakeDamage: characterData.friendlyFire.take / characterData.validGameCount,
+      validGameCount: characterData.playerIndex,
+      averageDamage: characterData.damage / characterData.playerIndex,
+      averageCauseDamage: characterData.friendlyFire.cause / characterData.playerIndex,
+      averageTakeDamage: characterData.friendlyFire.take / characterData.playerIndex,
       friendlyFireRate:
         characterData.friendlyFire.cause /
         (characterData.damage + characterData.friendlyFire.cause),
@@ -545,9 +545,9 @@ function createCharacterPlot() {
   for (const [characterGameId, characterData] of Object.entries(props.characterDamageInfo)) {
     plotLabels.push(characterData.mappedName);
     characterColorList.push(characterToColor[characterGameId]);
-    averageDamageList.push(characterData.damage / characterData.validGameCount);
-    averageCauseList.push(characterData.friendlyFire.cause / characterData.validGameCount);
-    averageTakeList.push(characterData.friendlyFire.take / characterData.validGameCount);
+    averageDamageList.push(characterData.damage / characterData.playerIndex);
+    averageCauseList.push(characterData.friendlyFire.cause / characterData.playerIndex);
+    averageTakeList.push(characterData.friendlyFire.take / characterData.playerIndex);
     heartbrokenRateList.push(characterData.friendlyFire.take / characterData.friendlyFire.cause);
   }
 

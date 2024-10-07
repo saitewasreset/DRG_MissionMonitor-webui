@@ -10,6 +10,14 @@ export const characterFilterOptions = [
   { label: "侦察", value: "SCOUT" },
 ];
 
+export const kpiCharacterFilterOptions = [
+  { label: "钻机", value: "driller" },
+  { label: "枪手", value: "gunner" },
+  { label: "工程", value: "engineer" },
+  { label: "侦察", value: "scout" },
+  { label: "侦察-输出型", value: "scout_special" },
+];
+
 export function getFirstGroupInfo<T>(
   objectList: T[],
   compar: (a: T, b: T) => number,
