@@ -68,6 +68,7 @@ interface PlayerInfo {
 interface PlayerData {
   characterMap: Record<string, string>;
   playerData: Record<string, PlayerInfo>;
+  prevPlayerData: Record<string, PlayerInfo>;
 }
 
 interface CharacterInfo {
@@ -94,8 +95,15 @@ interface MissionTypeInfoTableRow extends MissionTypeInfo {
   mappedType: string;
 }
 
-interface PlayerInfoTableRow extends PlayerInfo {
+interface PlayerInfoTableRow {
   playerName: string;
+  averageDeathNum: number[];
+  averageMineralsMined: number[];
+  averageReviveNum: number[];
+  averageSupplyCount: number[];
+  averageSupplyEfficiency: number[];
+  characterInfo: Record<string, number>;
+  validMissionCount: number;
   characterMapping: Record<string, string>;
 }
 
@@ -292,36 +300,63 @@ function createPlayerInfoTableColumns(): DataTableColumns<PlayerInfoTableRow> {
     {
       title: "平均救人数",
       key: "averageReviveNum",
-      render: (row) => row.averageReviveNum.toFixed(2),
-      sorter: (a, b) => a.averageReviveNum - b.averageReviveNum,
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageReviveNum[0], total: row.averageReviveNum[1]},
+        formatter: (x) => x.toFixed(2),
+        style: "font-size: 1rem",
+      }),
+      sorter: (a, b) => a.averageReviveNum[1] - b.averageReviveNum[1],
       align: "center",
     },
     {
       title: "平均倒地数",
       key: "averageDeathNum",
-      render: (row) => row.averageDeathNum.toFixed(2),
-      sorter: (a, b) => a.averageDeathNum - b.averageDeathNum,
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageDeathNum[0], total: row.averageDeathNum[1]},
+        formatter: (x) => x.toFixed(2),
+        reverse: true,
+        style: "font-size: 1rem",
+      }),
+      sorter: (a, b) => a.averageDeathNum[1] - b.averageDeathNum[1],
       align: "center",
     },
     {
       title: "平均采集量",
       key: "averageMineralsMined",
-      render: (row) => nFormatter(row.averageMineralsMined, 2),
-      sorter: (a, b) => a.averageMineralsMined - b.averageMineralsMined,
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageMineralsMined[0], total: row.averageMineralsMined[1]},
+        formatter: (x) => x.toFixed(2),
+        style: "font-size: 1rem",
+      }),
+      sorter: (a, b) => a.averageMineralsMined[1] - b.averageMineralsMined[1],
       align: "center",
     },
     {
       title: "平均补给份数",
       key: "averageSupplyCount",
-      render: (row) => row.averageSupplyCount.toFixed(2),
-      sorter: (a, b) => a.averageSupplyCount - b.averageSupplyCount,
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageSupplyCount[0], total: row.averageSupplyCount[1]},
+        formatter: (x) => x.toFixed(2),
+        reverse: true,
+        style: "font-size: 1rem",
+      }),
+      sorter: (a, b) => a.averageSupplyCount[1] - b.averageSupplyCount[1],
       align: "center",
     },
     {
       title: "平均补给效率",
       key: "averageSupplyEfficiency",
-      render: (row) => formatPercent(row.averageSupplyEfficiency),
-      sorter: (a, b) => a.averageSupplyEfficiency - b.averageSupplyEfficiency,
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageSupplyEfficiency[0], total: row.averageSupplyEfficiency[1]},
+        formatter: formatPercent,
+        style: "font-size: 1rem",
+      }),
+      sorter: (a, b) => a.averageSupplyEfficiency[1] - b.averageSupplyEfficiency[1],
       align: "center",
     },
   ];
@@ -333,7 +368,13 @@ function createPlayerInfoTableData(playerData: PlayerData): PlayerInfoTableRow[]
     result.push({
       playerName,
       characterMapping: playerData.characterMap,
-      ...playerInfo,
+      averageDeathNum: [playerData.prevPlayerData[playerName].averageDeathNum, playerInfo.averageDeathNum],
+      averageMineralsMined: [playerData.prevPlayerData[playerName].averageMineralsMined, playerInfo.averageMineralsMined],
+      averageReviveNum: [playerData.prevPlayerData[playerName].averageReviveNum, playerInfo.averageReviveNum],
+      averageSupplyCount: [playerData.prevPlayerData[playerName].averageSupplyCount, playerInfo.averageSupplyCount],
+      averageSupplyEfficiency: [playerData.prevPlayerData[playerName].averageSupplyEfficiency, playerInfo.averageSupplyEfficiency],
+      characterInfo: playerInfo.characterInfo,
+      validMissionCount: playerInfo.validMissionCount,
     });
   }
 

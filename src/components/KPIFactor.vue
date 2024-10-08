@@ -203,7 +203,7 @@ function generateGammaTableData(gammaData: GammaInfo, element: string): GammaRow
 
 import { translate } from "@/mapping";
 import { ref, h } from "vue";
-import { NGrid, NGi, NFlex, NCard, NDataTable, useMessage, NSelect, type DataTableColumns, type SelectOption } from "naive-ui";
+import { NFlex, NCard, NDataTable, useMessage, NSelect, type DataTableColumns, type SelectOption } from "naive-ui";
 
 import { generateKPICharacterClass, getKPICharacterName } from "@/formatter";
 import { getKPICharacterOrder } from "@/tool";

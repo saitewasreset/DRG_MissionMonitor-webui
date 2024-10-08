@@ -3,9 +3,10 @@ import { NStatistic, NText } from "naive-ui";
 
 const props = defineProps<{
   label: string;
-  delta?: { prev: number; recent: number; total: number };
+  delta?: { prev: number; total: number };
   reverse?: boolean;
   formatter?: (delta: number) => string;
+  style?: string;
 }>();
 
 const deltaRate = (delta: number) => {
@@ -33,7 +34,7 @@ function getTextType(delta: number) {
 </script>
 <template>
   <n-statistic :label="label">
-    {{ formatter ? formatter(delta?.total || 0) : delta?.total }}
+    <span :style="style">{{ formatter ? formatter(delta?.total || 0) : delta?.total }}</span>
     <template #suffix>
       <n-text
         depth="3"
