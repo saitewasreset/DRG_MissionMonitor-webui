@@ -4,15 +4,16 @@ import { NDataTable, NCard, NSelect, type DataTableColumns, type SelectOption } 
 import Plotly, { type Data } from "plotly.js-basic-dist";
 import { nFormatter } from "@/formatter";
 import { ref, watch, h } from "vue";
+import DeltaView from "./DeltaView.vue";
 
 interface FriendlyFireTableRow {
   playerName: string;
   validGameCount: number;
-  averageDamage: number;
-  averageCause: number;
-  averageTake: number;
-  friendlyFireRate: number;
-  heartbrokenRate: number;
+  averageDamage: number[];
+  averageCause: number[];
+  averageTake: number[];
+  friendlyFireRate: number[];
+  heartbrokenRate: number[];
 }
 
 interface PlayerCauseRow {
@@ -56,44 +57,66 @@ function createFriendlyFireTableColumns(): DataTableColumns<FriendlyFireTableRow
       title: "平均伤害",
       key: "averageDamage",
       align: "center",
-      sorter: (a, b) => a.averageDamage - b.averageDamage,
-      render: (row) => nFormatter(row.averageDamage, 2),
+      sorter: (a, b) => a.averageDamage[1] - b.averageDamage[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageDamage[0], total: row.averageDamage[1]},
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }),
     },
     {
       title: "平均造成友伤",
       key: "averageCause",
       align: "center",
-      sorter: (a, b) => a.averageCause - b.averageCause,
-      render: (row) => nFormatter(row.averageCause, 2),
+      sorter: (a, b) => a.averageCause[1] - b.averageCause[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageCause[0], total: row.averageCause[1]},
+        reverse: true,
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }),
     },
     {
       title: "平均受到友伤",
       key: "averageTake",
       align: "center",
-      sorter: (a, b) => a.averageTake - b.averageTake,
-      render: (row) => nFormatter(row.averageTake, 2),
+      sorter: (a, b) => a.averageTake[1] - b.averageTake[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageTake[0], total: row.averageTake[1]},
+        reverse: true,
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }),
     },
     {
       title: "友伤比例",
       key: "friendlyFireRate",
       align: "center",
-      sorter: (a, b) => a.friendlyFireRate - b.friendlyFireRate,
+      sorter: (a, b) => a.friendlyFireRate[1] - b.friendlyFireRate[1],
       defaultSortOrder: "descend",
-      render: (row) => (row.friendlyFireRate * 1000).toFixed(2) + "‰",
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.friendlyFireRate[0], total: row.friendlyFireRate[1]},
+        reverse: true,
+        formatter: (x) => (x * 1000).toFixed(2) + "‰",
+        style: "font-size: 1rem",
+      })
     },
     {
       title: "心碎值",
       key: "heartbrokenRate",
       align: "center",
-      sorter: (a, b) => a.heartbrokenRate - b.heartbrokenRate,
-      render: (row) =>
-        h(
-          "span",
-          {
-            class: `${heartbrokenRateToClass(row.heartbrokenRate)}`,
-          },
-          row.heartbrokenRate.toFixed(2),
-        ),
+      sorter: (a, b) => a.heartbrokenRate[1] - b.heartbrokenRate[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.heartbrokenRate[0], total: row.heartbrokenRate[1]},
+        formatter: (x) => x.toFixed(2),
+        style: "font-size: 1rem",
+        inner_class: `${heartbrokenRateToClass(row.heartbrokenRate[1])}`,
+      })
     },
   ];
 }
@@ -106,13 +129,25 @@ function generateFriendlyFireTableData(): FriendlyFireTableRow[] {
   let result = [];
 
   for (const [playerName, playerDamageInfo] of Object.entries(props.overallDamageInfo.info)) {
+
+    let prevInfo = props.overallDamageInfo.prevInfo[playerName];
+
     let totalDamage = 0.0;
+    let prevDamage = 0.0;
+    
     for (const damage of Object.values(playerDamageInfo.damage)) {
       totalDamage += damage;
     }
 
+    for (const damage of Object.values(prevInfo.damage)) {
+      prevDamage += damage;
+    }
+
     let totalCause = 0.0;
     let totalTake = 0.0;
+
+    let prevCause = 0.0;
+    let prevTake = 0.0;
 
     for (const cause of Object.values(playerDamageInfo.ff.cause)) {
       totalCause += cause.damage;
@@ -122,14 +157,22 @@ function generateFriendlyFireTableData(): FriendlyFireTableRow[] {
       totalTake += take.damage;
     }
 
+    for (const cause of Object.values(prevInfo.ff.cause)) {
+      prevCause += cause.damage;
+    }
+
+    for (const take of Object.values(prevInfo.ff.take)) {
+      prevTake += take.damage;
+    }
+
     result.push({
       playerName,
       validGameCount: playerDamageInfo.validGameCount,
-      averageDamage: totalDamage / playerDamageInfo.validGameCount,
-      averageCause: totalCause / playerDamageInfo.validGameCount,
-      averageTake: totalTake / playerDamageInfo.validGameCount,
-      friendlyFireRate: totalCause / totalDamage,
-      heartbrokenRate: totalTake / totalCause,
+      averageDamage: [prevDamage / prevInfo.validGameCount, totalDamage / playerDamageInfo.validGameCount],
+      averageCause: [prevCause / prevInfo.validGameCount, totalCause / playerDamageInfo.validGameCount],
+      averageTake: [prevTake / prevInfo.validGameCount, totalTake / playerDamageInfo.validGameCount],
+      friendlyFireRate: [prevCause / prevDamage, totalCause / totalDamage],
+      heartbrokenRate: [prevTake / prevCause, totalTake / totalCause],
     });
   }
 

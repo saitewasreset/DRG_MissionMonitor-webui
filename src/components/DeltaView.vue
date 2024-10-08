@@ -7,6 +7,7 @@ const props = defineProps<{
   reverse?: boolean;
   formatter?: (delta: number) => string;
   style?: string;
+  inner_class?: string;
 }>();
 
 const deltaRate = (delta: number) => {
@@ -34,7 +35,7 @@ function getTextType(delta: number) {
 </script>
 <template>
   <n-statistic :label="label">
-    <span :style="style">{{ formatter ? formatter(delta?.total || 0) : delta?.total }}</span>
+    <span :style="style" :class="inner_class">{{ formatter ? formatter(delta?.total || 0) : delta?.total }}</span>
     <template #suffix>
       <n-text
         depth="3"

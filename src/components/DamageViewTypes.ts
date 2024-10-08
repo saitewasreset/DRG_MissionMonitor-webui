@@ -1,5 +1,6 @@
 export interface OverallDamageInfo {
   info: Record<string, PlayerDamageInfo>;
+  prevInfo: Record<string, PlayerDamageInfo>;
   entityMapping: Record<string, string>;
 }
 

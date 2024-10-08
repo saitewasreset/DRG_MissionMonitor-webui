@@ -13,14 +13,15 @@ import { nFormatter, generateCharacterClass } from "@/formatter";
 import { translate } from "@/mapping";
 
 import { getFirstGroupInfo } from "@/tool";
+import DeltaView from "./DeltaView.vue";
 
 interface OverallTableRow {
   playerName: string;
   validGameCount: number;
-  averageKillNum: number;
-  averageDamage: number;
-  averageRegularSupplyCount: number;
-  averageDamagePerRegularSupply: number;
+  averageKillNum: number[];
+  averageDamage: number[];
+  averageRegularSupplyCount: number[];
+  averageDamagePerRegularSupply: number[];
 }
 
 interface WeaponTableRow {
@@ -67,21 +68,50 @@ const createOverallTableSummary: DataTableCreateSummary = (pageData) => {
   let totalDamage = 0.0;
   let totalRegularSupplyCount = 0;
 
+  let totalPrevKill = 0.0;
+  let totalPrevDamage = 0.0;
+  let totalPrevRegularSupplyCount = 0;
+
   for (const row of rows) {
-    totalKill += row.averageKillNum;
-    totalDamage += row.averageDamage;
-    totalRegularSupplyCount += row.averageRegularSupplyCount;
+    totalKill += row.averageKillNum[1];
+    totalPrevKill += row.averageKillNum[0];
+    totalDamage += row.averageDamage[1];
+    totalPrevDamage += row.averageDamage[0];
+    totalRegularSupplyCount += row.averageRegularSupplyCount[1];
+    totalPrevRegularSupplyCount += row.averageRegularSupplyCount[0];
   }
 
   let totalDamagePerSupply = totalDamage / totalRegularSupplyCount;
+  let totalPrevDamagePerSupply = totalPrevDamage / totalPrevRegularSupplyCount;
 
   return {
     playerName: { value: "总计" },
     validGameCount: { value: "-" },
-    averageKillNum: { value: totalKill.toFixed(0) },
-    averageDamage: { value: nFormatter(totalDamage, 2) },
-    averageRegularSupplyCount: { value: totalRegularSupplyCount.toFixed(1) },
-    averageDamagePerRegularSupply: { value: nFormatter(totalDamagePerSupply, 2) },
+    averageKillNum: { value: h(DeltaView, {
+        label: "",
+        delta: {prev: totalPrevKill, total: totalKill},
+        formatter: (x) => x.toFixed(0),
+        style: "font-size: 1rem",
+      }) },
+    averageDamage: { value: h(DeltaView, {
+        label: "",
+        delta: {prev: totalPrevDamage, total: totalDamage},
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }) },
+    averageRegularSupplyCount: { value: h(DeltaView, {
+        label: "",
+        delta: {prev: totalPrevRegularSupplyCount, total: totalRegularSupplyCount},
+        formatter: (x) => x.toFixed(1),
+        reverse: true,
+        style: "font-size: 1rem",
+      }) },
+    averageDamagePerRegularSupply: { value: h(DeltaView, {
+        label: "",
+        delta: {prev: totalPrevDamagePerSupply, total: totalDamagePerSupply},
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }) },
   };
 };
 
@@ -102,38 +132,51 @@ function createOverallTableColumns(): DataTableColumns<OverallTableRow> {
       title: "平均击杀数",
       key: "averageKillNum",
       align: "center",
-      sorter: (a, b) => a.averageKillNum - b.averageKillNum,
-      render(row) {
-        return row.averageKillNum.toFixed(0);
-      },
+      sorter: (a, b) => a.averageKillNum[1] - b.averageKillNum[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageKillNum[0], total: row.averageKillNum[1]},
+        formatter: (x) => x.toFixed(0),
+        style: "font-size: 1rem",
+      }),
     },
     {
       title: "平均伤害",
       key: "averageDamage",
       align: "center",
-      sorter: (a, b) => a.averageDamage - b.averageDamage,
+      sorter: (a, b) => a.averageDamage[1] - b.averageDamage[1],
       defaultSortOrder: "descend",
-      render(row) {
-        return nFormatter(row.averageDamage, 2);
-      },
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageDamage[0], total: row.averageDamage[1]},
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }),
     },
     {
       title: "平均约化补给数",
       key: "averageRegularSupplyCount",
       align: "center",
-      sorter: (a, b) => a.averageRegularSupplyCount - b.averageRegularSupplyCount,
-      render(row) {
-        return row.averageRegularSupplyCount.toFixed(1);
-      },
+      sorter: (a, b) => a.averageRegularSupplyCount[1] - b.averageRegularSupplyCount[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageRegularSupplyCount[0], total: row.averageRegularSupplyCount[1]},
+        reverse: true,
+        formatter: (x) => x.toFixed(1),
+        style: "font-size: 1rem",
+      }),
     },
     {
       title: "每约化补给伤害",
       key: "averageDamagePerRegularSupply",
       align: "center",
-      sorter: (a, b) => a.averageDamagePerRegularSupply - b.averageDamagePerRegularSupply,
-      render(row) {
-        return nFormatter(row.averageDamagePerRegularSupply, 2);
-      },
+      sorter: (a, b) => a.averageDamagePerRegularSupply[1] - b.averageDamagePerRegularSupply[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.averageDamagePerRegularSupply[0], total: row.averageDamagePerRegularSupply[1]},
+        formatter: (x) => nFormatter(x, 2),
+        style: "font-size: 1rem",
+      }),
     },
   ];
 }
@@ -147,6 +190,9 @@ function generateOverallTableData(): OverallTableRow[] {
     let totalDamage = 0.0;
     let totalKill = 0.0;
 
+    let prevDamage = 0.0;
+    let prevKill = 0.0;
+
     for (const damage of Object.values(playerData.damage)) {
       totalDamage += damage;
     }
@@ -155,14 +201,26 @@ function generateOverallTableData(): OverallTableRow[] {
       totalKill += kill;
     }
 
+    let playerPrevData = props.overallDamageInfo.prevInfo[playerName];
+
+    for (const damage of Object.values(playerPrevData.damage)) {
+      prevDamage += damage;
+    }
+
+    for (const kill of Object.values(playerPrevData.kill)) {
+      prevKill += kill;
+    }
+
     result.push({
       playerName,
       validGameCount: playerData.validGameCount,
-      averageKillNum: totalKill / playerData.validGameCount,
-      averageDamage: totalDamage / playerData.validGameCount,
-      averageRegularSupplyCount: playerData.averageSupplyCount + 1,
+      averageKillNum: [prevKill / playerPrevData.validGameCount, totalKill / playerData.validGameCount],
+      averageDamage: [prevDamage / playerPrevData.validGameCount, totalDamage / playerData.validGameCount, ],
+      averageRegularSupplyCount: [playerPrevData.averageSupplyCount + 1, playerData.averageSupplyCount + 1, ],
       averageDamagePerRegularSupply:
-        totalDamage / ((playerData.averageSupplyCount + 1) * playerData.validGameCount),
+        [prevDamage / ((playerPrevData.averageSupplyCount + 1) * playerPrevData.validGameCount), 
+        totalDamage / ((playerData.averageSupplyCount + 1) * playerData.validGameCount)  
+        ],
     });
   }
 
