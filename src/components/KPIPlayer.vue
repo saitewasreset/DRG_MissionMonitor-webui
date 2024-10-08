@@ -14,7 +14,7 @@ import {formatMissionDate, generateKPICharacterClass, getKPICharacterName } from
 import { kpiCharacterFilterOptions } from "@/tool";
 
 import MissionDetails from "./MissionDetails.vue";
-
+import DeltaView from "./DeltaView.vue";
 import type { Response } from "@/type";
 
 interface MissionKPIInfo {
@@ -39,7 +39,7 @@ type PlayerKPIInfo = Record<
 interface OverallKPIInfoRow {
   playerName: string;
   playerIndex: number;
-  playerKPI: number;
+  playerKPI: number[];
   children?: OverallKPIInfoRow[];
 }
 
@@ -78,28 +78,69 @@ function createOverallKPIInfoTableColumns(): DataTableColumns<OverallKPIInfoRow>
       key: "playerKPI",
       align: "center",
       defaultSortOrder: "descend",
-      sorter: (a, b) => a.playerKPI - b.playerKPI,
-      render(row) {
-        return (row.playerKPI * 100).toFixed(2);
-      },
+      sorter: (a, b) => a.playerKPI[1] - b.playerKPI[1],
+      render: (row) => h(DeltaView, {
+        label: "",
+        delta: {prev: row.playerKPI[0], total: row.playerKPI[1]},
+        formatter: (x) => (x * 100).toFixed(2),
+        style: "font-size: 1rem",
+      })
     },
   ];
 }
 
 function generateOverallKPIInfoTableData(playerKPIData: PlayerKPIInfo) {
   overallKPIInfoTableData.value = [];
+
   for (const [playerName, playerInfo] of Object.entries(playerKPIData)) {
+    let playerMissionList: MissionKPIInfo[] = [];
+
+    for (const characterInfo of Object.values(playerInfo.byCharacter)) {
+      for (const missionInfo of characterInfo.missionList) {
+        playerMissionList.push(missionInfo);
+      }
+    }
+
+    playerMissionList.sort((a, b) => a.beginTimestamp - b.beginTimestamp);
+
+    let prevCount = Math.floor(playerMissionList.length * 0.8);
+    let prevWeightedSum = 0.0;
+    let prevPlayerIndexSum = 0.0;
+
+    for (let i = 0; i < prevCount; i++) {
+      prevWeightedSum += playerMissionList[i].missionKPI;
+      prevPlayerIndexSum += playerMissionList[i].playerIndex;
+    }
+
+    let prevPlayerKPI = prevWeightedSum / prevPlayerIndexSum;
+
     const row: OverallKPIInfoRow = {
       playerName,
       playerIndex: playerInfo.playerIndex,
-      playerKPI: playerInfo.playerKPI,
+      playerKPI: [prevPlayerKPI, playerInfo.playerKPI],
       children: [],
     };
+
     for (const characterInfo of Object.values(playerInfo.byCharacter)) {
+      let characterMissionList = characterInfo.missionList;
+
+      characterMissionList.sort((a, b) => a.beginTimestamp - b.beginTimestamp);
+      let prevCount = Math.floor(characterMissionList.length * 0.8);
+      let prevWeightedSum = 0.0;
+      let prevPlayerIndexSum = 0.0;
+
+      for (let i = 0; i < prevCount; i++) {
+        prevWeightedSum += characterMissionList[i].missionKPI;
+        prevPlayerIndexSum += characterMissionList[i].playerIndex;
+      }
+
+      let prevCharacterKPI = prevWeightedSum / prevPlayerIndexSum;
+
+
       row.children?.push({
         playerName: characterInfo.characterKPIType,
         playerIndex: characterInfo.playerIndex,
-        playerKPI: characterInfo.characterKPI,
+        playerKPI: [prevCharacterKPI, characterInfo.characterKPI],
       });
     }
     overallKPIInfoTableData.value.push(row);
