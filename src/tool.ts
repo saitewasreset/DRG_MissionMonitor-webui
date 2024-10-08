@@ -56,3 +56,20 @@ export function getFirstGroupInfo<T>(
     dataList,
   };
 }
+
+export function getKPICharacterOrder(source: string) {
+  switch (source) {
+    case "driller":
+      return 0;
+    case "engineer":
+      return 1;
+    case "gunner":
+      return 2;
+    case "scout":
+      return 3;
+    case "scout_special":
+      return 4;
+    default:
+      return 5;
+  }
+}

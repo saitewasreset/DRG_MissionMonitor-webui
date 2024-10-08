@@ -33,6 +33,19 @@ interface GammaRow {
   ratio: number;
 }
 
+interface IndexTransformRange {
+  rankRange: [number, number];
+  sourceRange: [number, number];
+  transformRange: [number, number];
+  transformCofficient: [number, number];
+  playerCount: number;
+}
+
+type CharacterTransformRangeInfo = Record<string, [IndexTransformRange]>;
+type TransformRangeInfo = Record<string, CharacterTransformRangeInfo>;
+
+
+
 function createWeightTableDataColumns(): DataTableColumns<WeightTableData> {
   return [
     {
@@ -93,6 +106,39 @@ function createWeightTableDataColumns(): DataTableColumns<WeightTableData> {
       },
     },
   ];
+}
+
+function createTransformInfoTableColumns(): DataTableColumns<IndexTransformRange> {
+  return [
+    {
+      title: "排名区间",
+      key: "rankRange",
+      align: "center",
+      render(row) {
+        return `[${row.rankRange[0].toFixed(2)}, ${row.rankRange[1].toFixed(2)})`;
+      },
+    },
+    {
+      title: "原始分区间",
+      key: "sourceRange",
+      align: "center",
+      render(row) {
+        return `[${row.sourceRange[0].toFixed(2)}, ${row.sourceRange[1].toFixed(2)})`;
+      }
+    },
+    {
+      title: "赋分区间",
+      key: "transformRange",
+      align: "center",
+      render(row) {
+        return `[${row.transformRange[0].toFixed(2)}, ${row.transformRange[1].toFixed(2)})`;
+      }
+    },
+  ];
+}
+
+function generateTransfromInfoTableData(character: string, type: string): IndexTransformRange[] {
+  return transformRangeInfoData.value[character][type];
 }
 
 function createGammaTableColumns(): DataTableColumns<GammaRow> {
@@ -157,15 +203,19 @@ function generateGammaTableData(gammaData: GammaInfo, element: string): GammaRow
 
 import { translate } from "@/mapping";
 import { ref, h } from "vue";
-import { NGrid, NGi, NFlex, NCard, NDataTable, useMessage, type DataTableColumns } from "naive-ui";
+import { NGrid, NGi, NFlex, NCard, NDataTable, useMessage, NSelect, type DataTableColumns, type SelectOption } from "naive-ui";
 
 import { generateKPICharacterClass, getKPICharacterName } from "@/formatter";
+import { getKPICharacterOrder } from "@/tool";
 
 const message = useMessage();
 
 const weightTableData = ref<WeightTableData[]>([]);
 
 const GammaData = ref<GammaInfo>({ kill: {}, damage: {}, nitra: {}, minerals: {} });
+const trnasformCharacterSelectOptions = ref<SelectOption[]>([]);
+const transformCharacterCurrentSelection = ref<string>("driller");
+const transformRangeInfoData = ref<TransformRangeInfo>({});
 
 fetch("./api/kpi/weight_table")
   .then((res) => res.json())
@@ -184,13 +234,40 @@ fetch("./api/kpi/gamma")
   .then((res) => res.json())
   .then((res: Response<GammaInfo>) => {
     if (res.code !== 200) {
-      message.error(`API Error while getting gamma data by promotion: ${res.message}`);
+      message.error(`API Error while getting gamma data: ${res.message}`);
     } else {
       GammaData.value = res.data;
     }
   })
   .catch((err) => {
-    message.error(`HTTP Error while getting gamma data by promotion: ${err}`);
+    message.error(`HTTP Error while getting gamma data: ${err}`);
+  });
+
+
+  fetch("./api/kpi/transform_range_info")
+  .then((res) => res.json())
+  .then((res: Response<TransformRangeInfo>) => {
+    if (res.code !== 200) {
+      message.error(`API Error while getting transform range: ${res.message}`);
+    } else {
+      transformRangeInfoData.value = res.data;
+
+      let temp = [];
+
+      for (const characterKPIType of Object.keys(res.data)) {
+        temp.push({
+          label: getKPICharacterName(characterKPIType),
+          value: characterKPIType
+        });
+      }
+
+      temp.sort((a, b) => getKPICharacterOrder(a.value) - getKPICharacterOrder(b.value));
+
+      trnasformCharacterSelectOptions.value = temp;
+    }
+  })
+  .catch((err) => {
+    message.error(`HTTP Error while getting transform range: ${err}`);
   });
 </script>
 <template>
@@ -252,5 +329,55 @@ fetch("./api/kpi/gamma")
         </n-card>
       </n-gi>
     </n-grid>
+  </n-card>
+  <n-card title="赋分区间">
+    <n-select v-model:value="transformCharacterCurrentSelection" :options="trnasformCharacterSelectOptions" style="width: 16em"></n-select>
+    <n-flex justify="space-around">        
+      <n-card title="击杀数" style="display: inline-block; width: fit-content">
+          <n-data-table
+            :columns="createTransformInfoTableColumns()"
+            :data="generateTransfromInfoTableData(transformCharacterCurrentSelection, 'kill')"
+            :pagination="false"
+            :row-key="(row: IndexTransformRange) => row.transformRange[0]"
+            style="width: fit-content"
+          ></n-data-table>
+        </n-card>
+        <n-card title="输出" style="display: inline-block; width: fit-content">
+          <n-data-table
+            :columns="createTransformInfoTableColumns()"
+            :data="generateTransfromInfoTableData(transformCharacterCurrentSelection, 'damage')"
+            :pagination="false"
+            :row-key="(row: IndexTransformRange) => row.transformRange[0]"
+            style="width: fit-content"
+          ></n-data-table>
+        </n-card>
+        <n-card title="高威胁目标" style="display: inline-block; width: fit-content">
+          <n-data-table
+            :columns="createTransformInfoTableColumns()"
+            :data="generateTransfromInfoTableData(transformCharacterCurrentSelection, 'priority')"
+            :pagination="false"
+            :row-key="(row: IndexTransformRange) => row.transformRange[0]"
+            style="width: fit-content"
+          ></n-data-table>
+        </n-card>
+        <n-card title="硝石采集量" style="display: inline-block; width: fit-content">
+          <n-data-table
+            :columns="createTransformInfoTableColumns()"
+            :data="generateTransfromInfoTableData(transformCharacterCurrentSelection, 'nitra')"
+            :pagination="false"
+            :row-key="(row: IndexTransformRange) => row.transformRange[0]"
+            style="width: fit-content"
+          ></n-data-table>
+        </n-card>
+        <n-card title="矿石采集量" style="display: inline-block; width: fit-content">
+          <n-data-table
+            :columns="createTransformInfoTableColumns()"
+            :data="generateTransfromInfoTableData(transformCharacterCurrentSelection, 'minerals')"
+            :pagination="false"
+            :row-key="(row: IndexTransformRange) => row.transformRange[0]"
+            style="width: fit-content"
+          ></n-data-table>
+        </n-card>
+    </n-flex>
   </n-card>
 </template>
