@@ -283,9 +283,8 @@ fetch("./api/kpi/gamma")
     </n-flex>
   </n-card>
   <n-card title="数据修正指标">
-    <n-grid :cols="4">
-      <n-gi>
-        <n-card title="击杀数">
+    <n-flex justify="space-around">
+        <n-card title="击杀数" style="display: inline-block; width: fit-content">
           <n-data-table
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'kill')"
@@ -294,9 +293,7 @@ fetch("./api/kpi/gamma")
             style="width: fit-content"
           ></n-data-table>
         </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="输出">
+        <n-card title="输出" style="display: inline-block; width: fit-content">
           <n-data-table
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'damage')"
@@ -305,9 +302,16 @@ fetch("./api/kpi/gamma")
             style="width: fit-content"
           ></n-data-table>
         </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="硝石采集量">
+        <n-card title="高威胁目标" style="display: inline-block; width: fit-content">
+          <n-data-table
+            :columns="createGammaTableColumns()"
+            :data="generateGammaTableData(GammaData, 'priority')"
+            :pagination="false"
+            :row-key="(row: GammaRow) => row.kpiCharacterType"
+            style="width: fit-content"
+          ></n-data-table>
+        </n-card>
+        <n-card title="硝石采集量" style="display: inline-block; width: fit-content">
           <n-data-table
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'nitra')"
@@ -316,9 +320,7 @@ fetch("./api/kpi/gamma")
             style="width: fit-content"
           ></n-data-table>
         </n-card>
-      </n-gi>
-      <n-gi>
-        <n-card title="矿石采集量">
+        <n-card title="矿石采集量" style="display: inline-block; width: fit-content">
           <n-data-table
             :columns="createGammaTableColumns()"
             :data="generateGammaTableData(GammaData, 'minerals')"
@@ -327,8 +329,7 @@ fetch("./api/kpi/gamma")
             style="width: fit-content"
           ></n-data-table>
         </n-card>
-      </n-gi>
-    </n-grid>
+    </n-flex>
   </n-card>
   <n-card title="赋分区间">
     <n-select v-model:value="transformCharacterCurrentSelection" :options="trnasformCharacterSelectOptions" style="width: 16em"></n-select>
