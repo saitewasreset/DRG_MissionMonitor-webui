@@ -13,7 +13,12 @@ const loginStore = useLoginStore();
         <n-tab-pane name="info" tab="信息" display-directive="show:lazy">
           <KPIFactor></KPIFactor>
         </n-tab-pane>
-        <n-tab-pane name="player" tab="玩家KPI" display-directive="show:lazy" v-if="loginStore">
+        <n-tab-pane
+          name="player"
+          tab="玩家KPI"
+          display-directive="show:lazy"
+          v-if="loginStore.login"
+        >
           <KPIPlayer></KPIPlayer>
         </n-tab-pane>
       </n-tabs>
