@@ -9,9 +9,24 @@ import LoginComponent from "@/components/LoginComponent.vue";
 const loginStore = useLoginStore();
 const showLogin = ref(false);
 
+interface LogoutResponse {
+  code: number;
+  message: string;
+}
+
 function onLockClicked() {
   if (loginStore.login === false) {
     showLogin.value = true;
+  } else {
+    fetch("./api/logout", {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((data: LogoutResponse) => {
+        if (data.code == 200) {
+          loginStore.login = false;
+        }
+      });
   }
 }
 
